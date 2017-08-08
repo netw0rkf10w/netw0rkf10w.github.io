@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>1 on Lê-Huu, D. Khuê</title>
+    <link>https://netw0rkf10w.github.io/publication_types/1/</link>
+    <description>Recent content in 1 on Lê-Huu, D. Khuê</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2017 D. Khuê Lê-Huu</copyright>
+    <lastBuildDate>Sat, 01 Jul 2017 00:00:00 +0000</lastBuildDate>
+    <atom:link href="/publication_types/1/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Alternating Direction Graph Matching</title>
+      <link>https://netw0rkf10w.github.io/publication/adgm/</link>
+      <pubDate>Sat, 01 Jul 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://netw0rkf10w.github.io/publication/adgm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>An Active Contour Model with Improved Shape Priors Using Fourier Descriptors</title>
+      <link>https://netw0rkf10w.github.io/publication/snakes/</link>
+      <pubDate>Fri, 01 Feb 2013 00:00:00 +0000</pubDate>
+      
+      <guid>https://netw0rkf10w.github.io/publication/snakes/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
