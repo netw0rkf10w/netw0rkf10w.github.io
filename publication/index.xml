@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Publications on Lê-Huu, D. Khuê</title>
-    <link>https://netw0rkf10w.github.io/publication/</link>
+    <link>https://khue.fr/publication/</link>
     <description>Recent content in Publications on Lê-Huu, D. Khuê</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,28 +12,28 @@
     
     <item>
       <title>Alternating Direction Graph Matching</title>
-      <link>https://netw0rkf10w.github.io/publication/adgm/</link>
+      <link>https://khue.fr/publication/adgm/</link>
       <pubDate>Sat, 01 Jul 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://netw0rkf10w.github.io/publication/adgm/</guid>
+      <guid>https://khue.fr/publication/adgm/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Dual Decomposition with Accelerated First-Order Scheme for Discrete Markov Random Field Optimization</title>
-      <link>https://netw0rkf10w.github.io/publication/smooth-mrfs/</link>
+      <link>https://khue.fr/publication/smooth-mrfs/</link>
       <pubDate>Mon, 01 Sep 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://netw0rkf10w.github.io/publication/smooth-mrfs/</guid>
+      <guid>https://khue.fr/publication/smooth-mrfs/</guid>
       <description></description>
     </item>
     
     <item>
       <title>An Active Contour Model with Improved Shape Priors Using Fourier Descriptors</title>
-      <link>https://netw0rkf10w.github.io/publication/snakes/</link>
+      <link>https://khue.fr/publication/snakes/</link>
       <pubDate>Fri, 01 Feb 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://netw0rkf10w.github.io/publication/snakes/</guid>
+      <guid>https://khue.fr/publication/snakes/</guid>
       <description></description>
     </item>
     
