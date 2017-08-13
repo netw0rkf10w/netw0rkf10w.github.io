@@ -133,4 +133,4 @@ MathJax.Hub.Config({
 });
 
 
-MathJax.Ajax.loadComplete("MathJax/config/local/local.js");
+MathJax.Ajax.loadComplete("https://khue.fr/MathJax/config/local/local.js");
