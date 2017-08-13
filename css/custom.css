@@ -12,6 +12,13 @@
     margin: 0px 0 10px 0;
 }
 
+.home-section {
+    background-color: rgb(255, 255, 255);
+    padding: 110px 0 110px 0;
+    animation: intro 0.3s both;
+    animation-delay: 0.15s;
+}
+
 p {
     margin-top: 0;
     margin-bottom: 1rem;
