@@ -20,8 +20,10 @@
 
 &lt;p&gt;Gradient descent step:
 \begin{equation}
-x&lt;em&gt;k = x&lt;/em&gt;{k-1} - t&lt;em&gt;k\nabla f(x&lt;/em&gt;{k-1})
+x_k = x_{k-1} - t_k\nabla f(x_{k-1})
 \end{equation}&lt;/p&gt;
+
+&lt;p&gt;$$x_k = x_{k-1} - t_k\nabla f(x_{k-1})$$&lt;/p&gt;
 
 &lt;h2 id=&#34;sub-headings&#34;&gt;Sub-headings&lt;/h2&gt;
 

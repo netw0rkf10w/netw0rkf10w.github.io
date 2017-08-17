@@ -99,18 +99,6 @@
         
 
         <li class="nav-item">
-          <a href="/#posts">
-            
-            <span>Posts</span>
-          </a>
-        </li>
-
-        
-        
-
-        
-
-        <li class="nav-item">
           <a href="/#teaching">
             
             <span>Teaching</span>
@@ -227,8 +215,10 @@
 
 <p>Gradient descent step:
 \begin{equation}
-x<em>k = x</em>{k-1} - t<em>k\nabla f(x</em>{k-1})
+x_k = x_{k-1} - t_k\nabla f(x_{k-1})
 \end{equation}</p>
+
+<p>$$x_k = x_{k-1} - t_k\nabla f(x_{k-1})$$</p>
 
 <h2 id="sub-headings">Sub-headings</h2>
 
@@ -643,10 +633,22 @@ Here's some important information...
     
     
     <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        MathJax.Hub.Config({
+            tex2jax: {
+              inlineMath: [ ['$','$'], ['\\\(','\\\)'] ],
+              /*inlineMath: [],
+              displayMath: [],*/
+              processEscapes: true
+            },
+            CommonHTML: { linebreaks: { automatic: true } },
+            "HTML-CSS": { linebreaks: { automatic: true } },
+                 SVG: { linebreaks: { automatic: true } },
+                 TeX: { equationNumbers: { autoNumber: "AMS" }}
+            
+          });
     </script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML,https://khue.fr/MathJax/config/local/local.js" integrity="sha512-tOav5w1OjvsSJzePRtt2uQPFwBoHt1VZcUq8l8nm5284LEKE9FSJBQryzMBzHxY5P0zRdNqEcpLIRVYFNgu1jw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML" integrity="sha512-tOav5w1OjvsSJzePRtt2uQPFwBoHt1VZcUq8l8nm5284LEKE9FSJBQryzMBzHxY5P0zRdNqEcpLIRVYFNgu1jw==" crossorigin="anonymous"></script>
     
     
 
