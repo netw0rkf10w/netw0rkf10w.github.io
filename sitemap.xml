@@ -32,15 +32,6 @@
     
     <url>
     
-      <loc>https://khue.fr/post/</loc>
-      <lastmod>2017-01-01T00:00:00+00:00</lastmod>
-    </url>
-    
-  
-    
-    
-    <url>
-    
       <loc>https://khue.fr/publication/</loc>
       <lastmod>2017-01-01T00:00:00+00:00</lastmod>
     </url>
@@ -60,6 +51,15 @@
     <url>
     
       <loc>https://khue.fr/talk/example-talk/</loc>
+      <lastmod>2017-01-01T00:00:00+01:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>https://khue.fr/post/</loc>
       <lastmod>2017-01-01T00:00:00+01:00</lastmod>
     </url>
     

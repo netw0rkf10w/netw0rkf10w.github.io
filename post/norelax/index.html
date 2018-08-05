@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme" content="hugo-academic">
+  <meta name="generator" content="Hugo 0.36.1" />
+  <meta name="author" content="Lê-Huu, D. Khuê">
+
+  
+  
+  
+  
+    
+      
+    
+  
+  <meta name="description" content="[In this paper, we study a nonconvex continuous relaxation of MAP
+inference in discrete Markov random fields (MRFs). We show that for
+arbitrary MRFs, this relaxation is tight, and a discrete stationary
+point of it can be easily reached by a simple block coordinate descent
+algorithm. In addition, we study the resolution of this relaxation using
+popular gradient methods, and further propose a more effective solution
+using a multilinear decomposition framework based on the alternating
+direction method of multipliers (ADMM). Experiments on many real-world
+problems demonstrate that the proposed ADMM significantly outperforms
+other nonconvex relaxation based methods, and compares favorably with
+state of the art MRF optimization algorithms in different settings.
+ We give proofs of the presented theoretical results in
+Appendix \[append:proofs\], implementation details of the methods in
+Appendix \[append:methods\], and experiment details in
+Appendix \[append:experiments\].
+]">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://khue.fr/post/norelax/">
+
+  
+
+
+  
+
+  
+  
+  <meta name="theme-color" content="#0095eb">
+  
+  
+  
+  
+    
+  
+  
+    
+    
+      
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+      
+    
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha512-6MXa8B6uaO18Hid6blRMetEIoPqHf7Ux1tnyIQdpt9qI5OACx7C+O3IVTr98vwGnlcg0LOLa02i9Y1HpVhlfiw==" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.1/css/academicons.min.css" integrity="sha512-NThgw3XKQ1absAahW6to7Ey42uycrVvfNfyjqcFNgCmOCQ5AR4AO0SiXrN+8ZtYeappp56lk1WtvjVmEa+VR6A==" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+  
+  
+  
+  
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,700%7cMerriweather%7cRoboto&#43;Mono">
+  
+  <link rel="stylesheet" href="/styles.css">
+  
+  <link rel="stylesheet" href="/css/custom.css">
+  
+
+  
+
+  
+  <link rel="alternate" href="https://khue.fr/index.xml" type="application/rss+xml" title="Lê-Huu, D. Khuê">
+  <link rel="feed" href="https://khue.fr/index.xml" type="application/rss+xml" title="Lê-Huu, D. Khuê">
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://khue.fr/post/norelax/">
+
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@https://twitter.com/netw0rkf10w">
+  <meta property="twitter:creator" content="@https://twitter.com/netw0rkf10w">
+  
+  <meta property="og:site_name" content="Lê-Huu, D. Khuê">
+  <meta property="og:url" content="https://khue.fr/post/norelax/">
+  <meta property="og:title" content="Continuous Relaxation of MAP Inference: A Nonconvex Perspective | Lê-Huu, D. Khuê">
+  <meta property="og:description" content="[In this paper, we study a nonconvex continuous relaxation of MAP
+inference in discrete Markov random fields (MRFs). We show that for
+arbitrary MRFs, this relaxation is tight, and a discrete stationary
+point of it can be easily reached by a simple block coordinate descent
+algorithm. In addition, we study the resolution of this relaxation using
+popular gradient methods, and further propose a more effective solution
+using a multilinear decomposition framework based on the alternating
+direction method of multipliers (ADMM). Experiments on many real-world
+problems demonstrate that the proposed ADMM significantly outperforms
+other nonconvex relaxation based methods, and compares favorably with
+state of the art MRF optimization algorithms in different settings.
+ We give proofs of the presented theoretical results in
+Appendix \[append:proofs\], implementation details of the methods in
+Appendix \[append:methods\], and experiment details in
+Appendix \[append:experiments\].
+]">
+  <meta property="og:locale" content="en-us">
+  
+  
+  
+  
+
+  
+
+  <title>Continuous Relaxation of MAP Inference: A Nonconvex Perspective | Lê-Huu, D. Khuê</title>
+
+</head>
+<body id="top" data-spy="scroll" data-target="#toc" data-offset="71" >
+
+<nav class="navbar navbar-default navbar-fixed-top" id="navbar-main">
+  <div class="container">
+
+    
+    <div class="navbar-header">
+      
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+              data-target=".navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+      <a class="navbar-brand" href="/"><img src="/img/icon.png" alt="Lê-Huu, D. Khuê"></a>
+    </div>
+
+    
+    <div class="collapse navbar-collapse">
+
+      
+      
+      <ul class="nav navbar-nav navbar-right">
+        
+
+        
+        
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a href="/#about">
+            
+            <span>Home</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+        
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a href="/#publications_selected">
+            
+            <span>Publications</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+        
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a href="/#teaching">
+            
+            <span>Teaching</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+        
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a href="/#contact">
+            
+            <span>Contact</span>
+            
+          </a>
+        </li>
+
+        
+        
+
+        
+        
+        
+        
+        
+          
+        
+
+        <li class="nav-item">
+          <a href="/files/cv-en.pdf">
+            
+            <span>CV</span>
+            
+          </a>
+        </li>
+
+        
+        
+      
+
+      
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+<article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+  <div class="article-container">
+    <h1 itemprop="name">Continuous Relaxation of MAP Inference: A Nonconvex Perspective</h1>
+
+    
+
+<div class="article-metadata">
+
+  <span class="article-date">
+    
+    <time datetime="0001-01-01 00:00:00 &#43;0000 UTC" itemprop="datePublished dateModified">
+      Jan 1, 0001
+    </time>
+  </span>
+  <span itemscope itemprop="author publisher" itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Lê-Huu, D. Khuê">
+  </span>
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    49 min read
+  </span>
+  
+
+  
+  
+
+  
+
+  
+  
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    <li>
+      <a class="twitter"
+         href="https://twitter.com/intent/tweet?text=Continuous%20Relaxation%20of%20MAP%20Inference%3a%20A%20Nonconvex%20Perspective&amp;url=https%3a%2f%2fkhue.fr%2fpost%2fnorelax%2f"
+         target="_blank" rel="noopener">
+        <i class="fa fa-twitter"></i>
+      </a>
+    </li>
+    <li>
+      <a class="facebook"
+         href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fkhue.fr%2fpost%2fnorelax%2f"
+         target="_blank" rel="noopener">
+        <i class="fa fa-facebook"></i>
+      </a>
+    </li>
+    <li>
+      <a class="linkedin"
+         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fkhue.fr%2fpost%2fnorelax%2f&amp;title=Continuous%20Relaxation%20of%20MAP%20Inference%3a%20A%20Nonconvex%20Perspective"
+         target="_blank" rel="noopener">
+        <i class="fa fa-linkedin"></i>
+      </a>
+    </li>
+    <li>
+      <a class="weibo"
+         href="http://service.weibo.com/share/share.php?url=https%3a%2f%2fkhue.fr%2fpost%2fnorelax%2f&amp;title=Continuous%20Relaxation%20of%20MAP%20Inference%3a%20A%20Nonconvex%20Perspective"
+         target="_blank" rel="noopener">
+        <i class="fa fa-weibo"></i>
+      </a>
+    </li>
+    <li>
+      <a class="email"
+         href="mailto:?subject=Continuous%20Relaxation%20of%20MAP%20Inference%3a%20A%20Nonconvex%20Perspective&amp;body=https%3a%2f%2fkhue.fr%2fpost%2fnorelax%2f">
+        <i class="fa fa-envelope"></i>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+<p>author</p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Finding the maximum a posteriori (MAP) configuration is a fundamental
+inference problem in undirected probabilistic graphical models, also
+known as Markov random fields (MRFs). This problem is described as
+follows.</p>
+
+<p>Let
+${\mathbf{s}}\in{\mathcal{S}}= {\mathcal{S}}_1\times\cdots\times{\mathcal{S}}_n$
+denote an assignment to $n$ discrete random variables $S_1,\ldots,S_n$
+where each variable $S_i$ takes values in a finite set of states (or
+<em>labels</em>) ${\mathcal{S}}_i$. Let ${\mathcal{G}}$ be a graph of $n$ nodes
+with the set of cliques ${\mathcal{C}}$. Consider an MRF representing a
+joint distribution $p({\mathbf{S}}):=p(S_1,\ldots,S<em>n)$ that factorizes
+over ${\mathcal{G}}$, $p(\cdot)$ takes the form:
+$$\label{eq:mrf-factorization}
+p({\mathbf{s}}) = \frac{1}{Z} \prod</em>{C\in{\mathcal{C}}} \psi_C(s_C) \quad \forall {\mathbf{s}}\in{\mathcal{S}},$$
+where $s_C$ is the joint configuration of the variables in the clique
+$C$, $\psi<em>C$ are positive functions called <em>potentials</em>, and
+$Z = \sum</em>{{\mathbf{s}}} \prod_{C\in{\mathcal{C}}} \psi_C({\mathbf{s}}_C)$
+is a normalization factor called <em>partition function</em>.</p>
+
+<p>The MAP inference problem consists of finding the most likely assignment
+to the variables, : $$\label{eq:map-inference}
+{\mathbf{s}}^* \in {\operatornamewithlimits{argmax}}<em>{{\mathbf{s}}\in{\mathcal{S}}} p({\mathbf{s}}) = {\operatornamewithlimits{argmax}}</em>{{\mathbf{s}}\in{\mathcal{S}}} \prod_{C\in{\mathcal{C}}} \psi_C(s_C).$$
+For each clique $C$, let ${\mathcal{S}}<em>C=\prod</em>{i\in C}{\mathcal{S}}_i$
+be the set of its joint configurations and define
+$$f_C(s_C) = -\log \psi_C(s_C)\quad \forall s_C\in{\mathcal{S}}<em>C.$$ It
+is straightforward that the MAP inference problem  is equivalent to
+minimizing the following function, called the <em>energy</em> of the MRF:
+$$\label{eq:energy}
+e({\mathbf{s}}) = \sum</em>{C\in{\mathcal{C}}}f_C(s_C).$$</p>
+
+<p>MRF optimization has been constantly attracting a significant amount of
+research over the last decades. Since this problem is in general
+NP-hard [@shimony1994finding], various approximate methods have been
+proposed and can be roughly grouped into two classes: (a) methods that
+stay in the discrete domain, such as move-making and belief
+propagation [@boykov2001fast; @fix2011graph; @komodakis2008performance; @yedidia2005constructing],
+or (b) methods that move into the continuous domain by solving convex
+relaxations such as quadratic programming (QP)
+relaxations <a href="for pairwise MRFs" target="_blank">@ravikumar2006quadratic</a>, semi-definite
+programming (SDP) relaxations [@olsson2007solving], or most prominently
+linear programming (LP)
+relaxations [@globerson2008fixing; @kappes2012bundle; @kolmogorov2006convergent; @kolmogorov2015new; @komodakis2011mrf; @martins2015ad3; @savchynskyy2012efficient; @sontag2012efficiently].</p>
+
+<p>While convex relaxations allow us to benefit from the tremendous convex
+optimization literature, and can be solved exactly in polynomial time,
+they often only produce real-valued solutions that need a further
+rounding step to be converted into integer ones, which can reduce
+significantly the accuracy if the relaxations are not tight. On the
+contrary, discrete methods tackle directly the original problem, but due
+to its combinatorial nature, this is a very challenging task. We refer
+to [@kappes2015ijcv] for a recent comparative study of these methods on
+a wide variety of problems.</p>
+
+<p>In this paper, we consider a different approach. We present a nonconvex
+continuous relaxation to the MAP inference problem for arbitrary
+(pairwise or higher-order) MRFs. Based on a block coordinate descent
+(BCD) rounding scheme that is guaranteed not to increase the energy over
+continuous solutions, we show that this nonconvex relaxation is tight
+and is actually equivalent to the original discrete problem. It should
+be noted that the same relaxation was previously discussed
+in [@ravikumar2006quadratic] but only for <em>pairwise</em> MRFs and, more
+importantly, was not directly solved. The significance of this (QP)
+nonconvex relaxation has remained purely theoretical since then. In this
+paper, we demonstrate it to be of great practical significance as well.
+In addition to establishing theoretical properties of this nonconvex
+relaxation for <em>arbitrary</em> MRFs based on BCD, we study popular generic
+optimization methods such as projected gradient
+descent [@bertsekas1999nonlinear] and Frank-Wolfe
+algorithm [@frank1956algorithm] for solving it. These methods, however,
+are empirically shown to suffer greatly from the trivial hardness of
+nonconvex optimization: getting stuck in bad local minima. To overcome
+this difficulty, we propose a multilinear decomposition solultion based
+on the alternating direction method of multipliers (ADMM). Experiments
+on different real-world problems show that the proposed nonconvex based
+approach can outperform many of the previously mentioned methods in
+different settings.</p>
+
+<p>The remainder of this paper is organized as follows.
+Section [sec:notation] presents necessary notation and formulation for
+our approach. In Section [sec:relaxation], the nonconvex relaxation is
+introduced and its properties are studied, while its resolution is
+presented in Section [sec:solving] together with a convergence
+analysis in Section [sec:convergence-analysis].
+Section [sec:experiments] presents experimental validation and
+comparison with state of the art methods. The last section concludes the
+paper.</p>
+
+<h1 id="notation-and-problem-reformulation-sec-notation">Notation and problem reformulation {#sec:notation}</h1>
+
+<p>It is often convenient to rewrite the MRF energy $e({\mathbf{s}})$ 
+using the indicator functions of labels assigned to each node. Let
+${\mathcal{V}}\subset{\mathcal{C}}$ denote the set of nodes of the graph
+${\mathcal{G}}$. For each $i\in{\mathcal{V}}$, let
+$x_i:{\mathcal{S}}_i\to{\left{ 0,1 \right}}$ be a function defined by
+$x_i(s) = 1$ if the node $i$ takes the label $s\in{\mathcal{S}}_i$, and
+$x_i(s)=0$ otherwise. It is easily seen that minimizing
+$e({\mathbf{s}})$ over ${\mathcal{S}}$ is equivalent to the following
+problem, where we have rewritten $e({\mathbf{s}})$ as a function of
+${\left{ x<em>i(\cdot) \right}}</em>{i\in{\mathcal{V}}}$<sup class="footnote-ref" id="fnref:1"><a rel="footnote" href="#fn:1">1</a></sup>:
+$$\label{prob:mrf}
+\begin{aligned}
+\mbox{min}\quad &amp; E({\mathbf{x}}) =  \sum<em>{C\in{\mathcal{C}}} \sum</em>{s_C\in{\mathcal{S}}_C}f_C(s<em>C)\prod</em>{j\in C}x_j(s<em>j) \
+\mbox{s.t.}\quad &amp; \sum</em>{s\in{\mathcal{S}}_i}x_i(s) = 1   \quad \forall i\in{\mathcal{V}},\
+&amp; x_i(s)\in{\left{ 0,1 \right}}    \quad \forall s\in{\mathcal{S}}_i, \forall i\in{\mathcal{V}}.
+\end{aligned}$$ For later convenience, a further reformulation using
+tensor notation is needed. Let us first give a brief review of tensor.</p>
+
+<p>A real-valued $D\textsuperscript{th}$-order tensor ${\mathbf{F}}$ is a
+multidimensional array belonging to
+${\mathbb{R}}^{n_1\times n_2 \times\cdots \times n_D}$ (where
+$n_1,n_2,\ldots,n<em>D$ are positive integers). Each dimension of a tensor
+is called a <em>mode</em>. The elements of ${\mathbf{F}}$ are denoted by
+$F</em>{i_1i_2\ldots i_D}$ where $i_d$ is the index along the mode $d$.</p>
+
+<p>A tensor can be multiplied by a vector at a specific mode. Let
+$\mathbf{v}=(v_1,v<em>2,\ldots,v</em>{n_d})$ be an $n_d$ dimensional vector.
+The <em>mode-$d$ product</em> of ${\mathbf{F}}$ and ${\mathbf{v}}$, denoted by
+${\mathbf{F}}\bigotimes_d{\mathbf{v}}$, is a
+$(D-1)\textsuperscript{th}$-order tensor ${\mathbf{G}}$ of dimensions
+$n<em>1\times\cdots  \times n</em>{d-1}\times n_{d+1}\times\cdots \times n<em>D$
+defined by
+$$G</em>{i<em>1\ldots i</em>{d-1}i_{d+1}\ldots i<em>D} = \sum</em>{i_d=1}^{n<em>d} F</em>{i<em>1\ldots i</em>{d}\ldots i<em>D}v</em>{i<em>d}\quad\forall i</em>{[1,D]\setminus d}.$$
+Note that the multiplication is only valid if ${\mathbf{v}}$ has the
+same dimension as the mode $d$ of ${\mathbf{F}}$.</p>
+
+<p>The product of a tensor and multiple vectors (at multiple modes) is
+defined as the consecutive product of the tensor and each vector (at the
+corresponding mode). The order of the multiplied vectors does not
+matter. For example, the product of a $4\textsuperscript{th}$-order
+tensor ${\mathbf{F}}\in{\mathbb{R}}^{n_1\times n_2\times n_3\times n_4}$
+and two vectors
+${\mathbf{u}}\in{\mathbb{R}}^{n_2},{\mathbf{v}}\in{\mathbb{R}}^{n_4}$ at
+the modes $2$ and $4$ (respectively) is an $n_1\times n_3$ tensor
+${\mathbf{G}}= {\mathbf{F}}\bigotimes_2{\mathbf{u}}\bigotimes_4{\mathbf{v}}=  {\mathbf{F}}\bigotimes_4{\mathbf{v}}\bigotimes<em>2{\mathbf{u}}$,
+where
+$$G</em>{i_1i<em>3} = \sum</em>{i_2=1}^{n<em>2}\sum</em>{i_4=1}^{n<em>4}F</em>{i_1i_2i_3i<em>4}u</em>{i<em>2}v</em>{i_4}\quad\forall i_1,i<em>3.$$
+Let us consider for convenience the notation
+${\mathbf{F}}\bigotimes</em>{{\mathcal{I}}} {\mathcal{M}}$ to denote the
+product of ${\mathbf{F}}$ with the set of vectors ${\mathcal{M}}$, at
+the modes specified by the set of indices ${\mathcal{I}}$ with
+${\left| {\mathcal{I}}\right|} = {\left| {\mathcal{M}}\right|}$. Since
+the order of the vectors and the modes must agree, ${\mathcal{M}}$ and
+${\mathcal{I}}$ are supposed to be ordered sets. By convention,
+${\mathbf{F}}\bigotimes<em>{{\mathcal{I}}} {\mathcal{M}}={\mathbf{F}}$ if
+${\mathcal{M}}= \emptyset$. Using this notation, the product in the
+previous example becomes
+$${\mathbf{G}}= {\mathbf{F}}\bigotimes</em>{{\left{ 2,4 \right}}}{\left{ {\mathbf{u}},{\mathbf{v}}\right}} = {\mathbf{F}}\bigotimes_{{\left{ 4,2 \right}}}{\left{ {\mathbf{v}},{\mathbf{u}}\right}}.$$</p>
+
+<p>Now back to our problem . For any node $i$, let
+${\mathbf{x}}_i = (x<em>i(s))</em>{s\in{\mathcal{S}}_i}$ be the vector composed
+of all possible values of $x_i(s)$. For a clique
+$C=(i_1,i<em>2,\ldots,i</em>\alpha)$, the potential function
+$f_C(s_1,s<em>2,\ldots,s</em>\alpha)$, where
+$s<em>d\in{\mathcal{S}}</em>{i<em>d}\forall 1\le d\le\alpha$, has $\alpha$ indices
+and thus can be seen as an $\alpha\textsuperscript{th}$-order tensor of
+dimensions
+${\left| {\mathcal{S}}</em>{i<em>1} \right|}\times{\left| {\mathcal{S}}</em>{i<em>2} \right|}\times\cdots\times{\left| {\mathcal{S}}</em>{i_\alpha} \right|}$.
+Let ${\mathbf{F}}<em>C$ denote this tensor. Recall that the energy term
+corresponding to $C$ in  is
+$$\sum</em>{s_1,s<em>2,\ldots,s</em>\alpha} f_C(s_1,s<em>2,\ldots,s</em>\alpha) x_{i_1}(s<em>1)x</em>{i_2}(s<em>2)\cdots x</em>{i<em>\alpha}(s</em>\alpha),$$
+which is clearly
+${\mathbf{F}}<em>{C} \bigotimes</em>{{\left{ 1,2,\ldots,\alpha \right}}}{\left{ {\mathbf{x}}_{i<em>1},{\mathbf{x}}</em>{i<em>2},\ldots,{\mathbf{x}}</em>{i<em>\alpha} \right}}$.
+For clarity purpose, we omit the index set and write simply
+${\mathbf{F}}</em>{C} \bigotimes{\left{ {\mathbf{x}}_{i<em>1},{\mathbf{x}}</em>{i<em>2},\ldots,{\mathbf{x}}</em>{i<em>\alpha} \right}}$,
+or equivalently
+${\mathbf{F}}</em>{C} \bigotimes{\left{ {\mathbf{x}}<em>i \right}}</em>{i\in C}$,
+with the assumption that each vector is multiplied at the right mode
+(which is the same as its position in the clique). Therefore, the energy
+in  becomes $$\label{eq:mrf-Energy}
+E({\mathbf{x}}) = \sum<em>{C\in{\mathcal{C}}} {\mathbf{F}}</em>{C} \bigotimes{\left{ {\mathbf{x}}<em>i \right}}</em>{i\in C}.$$
+Problem  can then be rewritten as $$\begin{aligned}
+\mbox{min } &amp;\quad E({\mathbf{x}}) \tag{\textsc{\textbf{mrf}}}\label{prob:mrf-tensor}\
+\mbox{s.t.} &amp;\quad {\mathbf{x}}\in\overline{{\mathcal{X}}} := {\left{ {\mathbf{x}}\ \Big| \ \mathbf{1}^\top{\mathbf{x}}_i = 1, {\mathbf{x}}_i\in{\left{ 0,1 \right}}^{{\left| {\mathcal{S}}_i \right|}} \ \forall i\in{\mathcal{V}}\right}}.\nonumber\end{aligned}$$
+A continuous relaxation of this problem is studied in the next section.</p>
+
+<h1 id="tight-relaxation-of-map-inference-sec-relaxation">Tight relaxation of MAP inference {#sec:relaxation}</h1>
+
+<p>By simply relaxing the constraints
+${\mathbf{x}}_i\in{\left{ 0,1 \right}}^{{\left| {\mathcal{S}}_i \right|}}$
+in  to ${\mathbf{x}}_i\ge\mathbf{0}$, we obtain the following nonconvex
+relaxation: $$\begin{aligned}
+\mbox{min } &amp;\quad E({\mathbf{x}}) \tag{\textsc{\textbf{rlx}}}\label{prob:relax}\
+\mbox{s.t.} &amp;\quad {\mathbf{x}}\in{\mathcal{X}}:= {\left{ {\mathbf{x}}\ \Big| \ \mathbf{1}^\top{\mathbf{x}}_i = 1, {\mathbf{x}}_i\ge\mathbf{0} \ \forall i\in{\mathcal{V}}\right}}.\nonumber\end{aligned}$$
+A clear advantage of this relaxation over the LP relaxation is its
+compactness. Indeed, if all nodes have the same number of labels $S$,
+then the number of variables and number of constraints of this
+relaxation are respectively ${\left| {\mathcal{V}}\right|}S$ and
+${\left| {\mathcal{V}}\right|}$, while for the LP relaxation these
+numbers are respectively $\mathcal{O}({\left| {\mathcal{C}}\right|}S^D)$
+and $\mathcal{O}({\left| {\mathcal{C}}\right|}SD)$, with $D$ the degree
+of the MRF.</p>
+
+<p>In this section some interesting properties of  are presented. In
+particular, we prove that this relaxation is tight and show how to
+obtain a <em>discrete</em> stationary point for it. Let us first propose a
+simple BCD algorithm to solve . Relaxation tightness and other
+properties follow naturally.</p>
+
+<p>Let $n={\left| {\mathcal{V}}\right|}$ be the number of nodes. The vector
+${\mathbf{x}}$ can be seen as an $n$-block vector, where each block
+corresponds to each node:
+${\mathbf{x}}=({\mathbf{x}}_1,{\mathbf{x}}_2,\ldots,{\mathbf{x}}_n)$.
+Starting from an initial solution, BCD solves  by iteratively optimizing
+$E$ over ${\mathbf{x}}_i$ while fixing all the other blocks. Note that
+our subsequent analysis is still valid for other variants of BCD, such
+as updating in a random order, or using subgraphs such as trees (instead
+of single nodes) as update blocks. To keep the presentation simple,
+however, we choose to update in the deterministic order
+$i=1,2,\ldots,n$. Each update step consists of solving
+$$\label{eq:BCD-update}
+{\mathbf{x}}<em>i^{(k+1)} \in {\operatornamewithlimits{argmin}}</em>{\mathbf{1}^\top{\mathbf{x}}_i = 1,{\mathbf{x}}<em>i\ge\mathbf{0}} E({\mathbf{x}}</em>{[1,i-1]}^{(k+1)},{\mathbf{x}}<em>i,{\mathbf{x}}</em>{[i+1,n]}^{(k)}).$$</p>
+
+<p>From  it is clear that for the cliques that do not contain the node $i$,
+their corresponding energy terms are independent of ${\mathbf{x}}<em>i$.
+Thus, if ${\mathcal{C}}(i)$ denotes the set of cliques containing $i$,
+then $$\begin{aligned}
+    E({\mathbf{x}}) &amp;= \sum</em>{C\in{\mathcal{C}}(i)} {\mathbf{F}}_C\bigotimes {\left{ {\mathbf{x}}<em>j \right}}</em>{j\in C} + \mathrm{cst}({\mathbf{x}}_i) <br />
+    &amp;= {\mathbf{c}}_i^\top{\mathbf{x}}_i + \mathrm{cst}({\mathbf{x}}_i),\end{aligned}$$
+where $\mathrm{cst}({\mathbf{x}}_i)$ is a term that does not depend on
+${\mathbf{x}}_i$, and $$\label{eq:mrf-energy-partial-derivative}
+    {\mathbf{c}}<em>i = \sum</em>{C\in{\mathcal{C}}(i)} {\mathbf{F}}_C\bigotimes {\left{ {\mathbf{x}}<em>j \right}}</em>{j\in C\setminus i} \quad\forall i\in{\mathcal{V}}.$$
+The update  becomes minimizing ${\mathbf{c}}_i^\top{\mathbf{x}}_i$,
+which can be solved using the following straightforward lemma.</p>
+
+<p>[lem:bcd] Let ${\mathbf{c}}=(c_1,\ldots,c<em>p)\in{\mathbb{R}}^p$,
+$\alpha={\operatornamewithlimits{argmin}}</em>{\beta}c<em>\beta$. The problem
+$\min</em>{\mathbf{1}^\top{\mathbf{u}}= 1,{\mathbf{u}}\ge\mathbf{0}} {\mathbf{c}}^\top{\mathbf{u}}$
+has an optimal solution ${\mathbf{u}}^<em>=(u_1^</em>,\ldots,u<em>p^*)$ defined by
+$u</em>\alpha^* = 1$ and $u_\beta^* = 0 \ \forall \beta\neq\alpha$.</p>
+
+<p>According to this lemma, we can solve  as follows: compute
+${\mathbf{c}}_i$ using , find the position $s$ of its smallest element,
+set $x_i(s) = 1$ and $x_i&reg; = 0\ \forall r\neq s$. Clearly, the
+solution ${\mathbf{x}}_i$ returned by this update step is discrete. It
+is easily seen that this update is equivalent to assigning the node $i$
+with the following label:
+$$s<em>i = {\operatornamewithlimits{argmin}}</em>{s\in{\mathcal{S}}<em>i} \sum</em>{C\in{\mathcal{C}}(i)} \sum<em>{s</em>{C\setminus i}\in {\mathcal{S}}_{C\setminus i}} f<em>C(s</em>{C\setminus i},s)\prod_{j\in C\setminus i}x_j(s_j).$$</p>
+
+<p>A sketch of the BCD algorithm is given in Algorithm [algo:BCD].</p>
+
+<p>Initialization: $k\gets 0$, ${\mathbf{x}}^{(0)}\in{\mathcal{X}}$.
+[algo:BCD-step]For $i=1,2,\ldots,n$: update ${\mathbf{x}}_i^{(k+1)}$
+as a (discrete) solution to . If ${\mathbf{x}}_i^{(k)}$ is also a
+discrete solution to , then set
+${\mathbf{x}}_i^{(k+1)} \gets {\mathbf{x}}_i^{(k)}$. Let $k\gets k+1$
+and go to Step [algo:BCD-step] until
+${\mathbf{x}}^{(k+1)} = {\mathbf{x}}^{(k)}$.</p>
+
+<p><em>Remark.</em> Starting from a discrete solution, BCD is equivalent to
+Iterated Conditional Modes (ICM) [@besag1986statistical]. Note however
+that BCD is designed for the <em>continuous</em> problem , whereas ICM relies
+on the <em>discrete</em> problem .</p>
+
+<p>[propos:bcd-fixed-point] For any initial solution
+${\mathbf{x}}^{(0)}$, BCD (Algorithm [algo:BCD]) converges to a
+discrete fixed point.</p>
+
+<p>A proof is given in the supplement. We will see in
+Section [sec:convergence-analysis] that this fixed point is also a
+stationary point of .</p>
+
+<p>The continuous relaxation  is tight.</p>
+
+<p>Since $E({\mathbf{x}})$ is continuous and both
+$\overline{{\mathcal{X}}}$ and ${\mathcal{X}}$ are closed, according to
+the Weierstrass extreme value theorem, both  and  must attain a (global)
+minimum, which we denote by ${{\mathbf{x}}<em>\textsc{mrf}}$ and
+${{\mathbf{x}}</em>\textsc{rlx}}$, respectively. Obviously
+$E({{\mathbf{x}}<em>\textsc{rlx}}) \le E({{\mathbf{x}}</em>\textsc{mrf}})$. Now
+let ${\mathbf{x}}^<em>$ be the solution of BCD with initialization
+${\mathbf{x}}^{(0)} = {{\mathbf{x}}_\textsc{rlx}}$. On the one hand,
+since $\mathrm{BCD}$ is a descent algorithm, we have
+$E({\mathbf{x}}^</em>) \le E({{\mathbf{x}}<em>\textsc{rlx}})$. On the other
+hand, since the solution returned by $\mathrm{BCD}$ is discrete, we have
+${\mathbf{x}}^*\in\overline{{\mathcal{X}}}$, yielding
+$E({{\mathbf{x}}</em>\textsc{mrf}}) \le E({\mathbf{x}}^<em>)$. Putting it all
+together, we get
+$E({\mathbf{x}}^</em>) \le E({{\mathbf{x}}<em>\textsc{rlx}}) \le E({{\mathbf{x}}</em>\textsc{mrf}}) \le E({\mathbf{x}}^*)$,
+which implies
+$E({{\mathbf{x}}<em>\textsc{rlx}}) = E({{\mathbf{x}}</em>\textsc{mrf}})$,   is
+tight.</p>
+
+<p><em>Remark.</em> The above proof is still valid if BCD performs only the first
+outer iteration. This means that one can obtain
+${{\mathbf{x}}<em>\textsc{mrf}}$ from ${{\mathbf{x}}</em>\textsc{rlx}}$ (same
+energy) in polynomial time,   and  can be seen as equivalent. This
+result was previously presented in [@ravikumar2006quadratic] for
+pairwise MRFs, here we have extended it to arbitrary order MRFs.</p>
+
+<p>While BCD is guaranteed to reach a discrete stationary point of , there
+is no guarantee on the quality of such point. In practice, as shown
+later in the experiments, the performance of BCD compares poorly with
+state of the art MRF optimization methods. In fact, the key challenge in
+nonconvex optimization is that there might be many local minima, and as
+a consequence, algorithms can easily get trapped in <em>bad</em> ones, even
+from multiple initializations.</p>
+
+<p>In the next section, we study the resolution of  using more
+sophisticated methods, where we come up with a multilinear decomposition
+ADMM that can reach very good local minima (many times even the global
+ones) on different real-world models.</p>
+
+<h1 id="solving-the-tight-nonconvex-relaxation-sec-solving">Solving the tight nonconvex relaxation {#sec:solving}</h1>
+
+<p>Since the MRF energy  is differentiable, it is worth investigating
+whether gradient methods can effectively optimize it. We briefly present
+two such methods in the next section. Then our proposed ADMM based
+algorithm is presented in the subsequent section. We provide a
+convergence analysis for all methods in
+Section [sec:convergence-analysis].</p>
+
+<h2 id="gradient-methods-sec-gradient-methods">Gradient methods {#sec:gradient-methods}</h2>
+
+<p>Projected gradient descent (PGD) and Frank-Wolfe algorithm (FW)
+(Algorithms [algo:PGD], [algo:FW]) are among the most popular
+methods for solving constrained optimization. We refer
+to [@bertsekas1999nonlinear] for an excellent presentation of these
+methods.</p>
+
+<p>Initialization: $k\gets 0$, ${\mathbf{x}}^{(0)}\in{\mathcal{X}}$.
+[algo:PGD-step]Compute $\beta^{(k)}$ and find the projection
+$${\mathbf{s}}^{(k)}= {\operatornamewithlimits{argmin}}_{{\mathbf{s}}\in{\mathcal{X}}} {\left| {\mathbf{x}}^{(k)} - \beta^{(k)}\nabla E({\mathbf{x}}^{(k)}) - {\mathbf{s}}\right|_2}^2.$$
+Compute $\alpha^{(k)}$ and update
+${\mathbf{x}}^{(k+1)} = {\mathbf{x}}^{(k)} + \alpha^{(k)}({\mathbf{s}}^{(k)} - {\mathbf{x}}^{(k)})$.
+Let $k\gets k+1$ and go to Step [algo:PGD-step].</p>
+
+<p>Initialization: $k\gets 0$, ${\mathbf{x}}^{(0)}\in{\mathcal{X}}$.
+[algo:FW-step]Find
+${\mathbf{s}}^{(k)}= {\operatornamewithlimits{argmin}}_{{\mathbf{s}}\in{\mathcal{X}}} {\mathbf{s}}^\top\nabla E({\mathbf{x}}^{(k)})$.
+Compute $\alpha^{(k)}$ and update
+${\mathbf{x}}^{(k+1)} = {\mathbf{x}}^{(k)} + \alpha^{(k)}({\mathbf{s}}^{(k)} - {\mathbf{x}}^{(k)})$.
+Let $k\gets k+1$ and go to Step [algo:FW-step].</p>
+
+<p>The step-sizes $\beta^{(k)}$ and $\alpha^{(k)}$ follow a chosen update
+rule. The most straightforward is the <em>diminishing</em> rule, which has for
+example $\beta^{(k)} = \frac{1}{\sqrt{k+1}},\alpha^{(k)} = 1$ for PGD,
+and $\alpha^{(k)} = \frac{2}{k+2}$ for FW. However, in practice, these
+step-sizes often lead to slow convergence. A better alternative is the
+following <em>line-search</em> ($\beta^{(k)}$ is set to $1$ for PGD):
+$$\label{eq:line-search}
+\alpha^{(k)} = {\operatornamewithlimits{argmin}}_{0\le \alpha\le 1}E\left({\mathbf{x}}^{(k)} + \alpha({\mathbf{s}}^{(k)} - {\mathbf{x}}^{(k)})\right).$$
+For our problem, this line-search can be performed efficiently because
+$E\left({\mathbf{x}}^{(k)} + \alpha({\mathbf{s}}^{(k)} - {\mathbf{x}}^{(k)})\right)$
+is a polynomial of $\alpha$. Further details (including line-search,
+update steps, stopping conditions, as well as other implementation
+issues) are provided in the supplement.</p>
+
+<h2 id="alternating-direction-method-of-multipliers-sec-admm">Alternating direction method of multipliers {#sec:admm}</h2>
+
+<p>Our proposed method shares some similarities with the method introduced
+in [@lehuu2017adgm] for solving graph matching. However, to make ADMM
+efficient and effective for MAP inference, we add the following
+important practical contributions: (1) We formulate the problem using
+individual potential tensors at each clique (instead of a single large
+tensor as in [@lehuu2017adgm]), which allows a better exploitation of
+the problem structure, as computational quantities at each node can be
+cached based on its neighboring nodes, yielding significant speed-ups;
+(2) We discuss how to choose the decomposed constraint sets that result
+in the best accuracy for MAP inference (note that the constraint sets
+for graph matching [@lehuu2017adgm] are different). In addition, we
+present a convergence analysis for the proposed method in
+Section [sec:convergence-analysis].</p>
+
+<p>For the reader to quickly get the idea, let us start with an example of
+a second-order<sup class="footnote-ref" id="fnref:2"><a rel="footnote" href="#fn:2">2</a></sup> MRF: $$\begin{gathered}
+    E<em>\text{second}({\mathbf{x}}) = \sum</em>{i\in {\mathcal{V}}} {\mathbf{F}}_i \bigotimes {\mathbf{x}}<em>i + \sum</em>{ij\in{\mathcal{C}}} {\mathbf{F}}_{ij} \bigotimes {\left{ {\mathbf{x}}_i,{\mathbf{x}}<em>j \right}} \ + \sum</em>{ijk\in{\mathcal{C}}} {\mathbf{F}}_{ijk} \bigotimes {\left{ {\mathbf{x}}_i,{\mathbf{x}}_j,{\mathbf{x}}<em>k \right}}.\end{gathered}$$
+Instead of dealing directly with this high degree polynomial, which is
+highly challenging, the idea is to decompose ${\mathbf{x}}$ into
+different variables that can be handled separately using Lagrangian
+relaxation. To this end, consider the following multilinear function:
+$$\begin{gathered}
+    F</em>\text{second}({\mathbf{x}},{\mathbf{y}},{\mathbf{z}}) = \sum_{i\in {\mathcal{V}}} {\mathbf{F}}_i \bigotimes {\mathbf{x}}<em>i + \sum</em>{ij\in{\mathcal{C}}} {\mathbf{F}}_{ij} \bigotimes {\left{ {\mathbf{x}}_i,{\mathbf{y}}<em>j \right}} \ + \sum</em>{ijk\in{\mathcal{C}}} {\mathbf{F}}_{ijk} \bigotimes {\left{ {\mathbf{x}}_i,{\mathbf{y}}_j,{\mathbf{z}}<em>k \right}}.\end{gathered}$$
+Clearly,
+$E</em>\text{second}({\mathbf{x}}) = F<em>\text{second}({\mathbf{x}},{\mathbf{x}},{\mathbf{x}})$.
+Thus, minimizing $E({\mathbf{x}})$ is equivalent to minimizing
+$F</em>\text{second}({\mathbf{x}},{\mathbf{y}},{\mathbf{z}})$ under the
+constraints ${\mathbf{x}}={\mathbf{y}}={\mathbf{z}}$, which can be
+relaxed using Lagrangian based method such as ADMM.</p>
+
+<p>Back to our general problem . Let $D$ denote the maximum clique size of
+the corresponding MRF. Using the same idea as above for decomposing
+${\mathbf{x}}$ into $D$ vectors
+${\mathbf{x}}^1,{\mathbf{x}}^2,\ldots,{\mathbf{x}}^D$, let us define
+$$\label{eq:energy-decomposed}
+F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) = \sum<em>{d=1}^D \sum</em>{i_1\ldots i<em>d\in{\mathcal{C}}} {\mathbf{F}}</em>{i_1\ldots i<em>d} \bigotimes {\left{ {\mathbf{x}}^1</em>{i<em>1},\ldots,{\mathbf{x}}^d</em>{i<em>d} \right}}.$$
+Clearly, the energy  becomes
+$E({\mathbf{x}}) = F({\mathbf{x}},{\mathbf{x}},\ldots,{\mathbf{x}})$. It
+is straightforward to see that  is equivalent to:
+$$\label{prob:mrf-decomposed}
+\begin{aligned}
+\mbox{min}\quad &amp; F({\mathbf{x}}^1,{\mathbf{x}}^2,\ldots,{\mathbf{x}}^D)\
+\mbox{s.t.}\quad &amp; {\mathbf{A}}^1{\mathbf{x}}^1 + \cdots +{\mathbf{A}}^D{\mathbf{x}}^D = \mathbf{0},<br />
+&amp;{\mathbf{x}}^d \in{\mathcal{X}}^d,\quad d=1,\ldots,D,
+\end{aligned}$$ where ${\mathbf{A}}^1,\ldots,{\mathbf{A}}^D$ are
+constant matrices such that $$\label{eq:equality-constraint}
+{\mathbf{A}}^1{\mathbf{x}}^1 + \cdots +{\mathbf{A}}^D{\mathbf{x}}^D = \mathbf{0} \Longleftrightarrow {\mathbf{x}}^1=\cdots={\mathbf{x}}^D,$$
+and ${\mathcal{X}}^1,\ldots,{\mathcal{X}}^D$ are closed convex sets
+satisfying $$\label{eq:set-intersection}
+{\mathcal{X}}^1\cap{\mathcal{X}}^2\cap\cdots\cap{\mathcal{X}}^D = {\mathcal{X}}.$$
+Note that the linear constraint in  is a general way to enforce
+${\mathbf{x}}^1=\cdots={\mathbf{x}}^D$ and it has an infinite number of
+particular instances. For example, with suitable choices of
+$({\mathbf{A}}^d)</em>{1\le d\le D}$, this linear constraint can become
+either one of the following sets of constraints: $$\begin{aligned}
+{3}
+&amp;\text{(cyclic)}&amp;&amp;{\mathbf{x}}^{d-1}  &amp;&amp;={\mathbf{x}}^d, \quad d = 2,\ldots, D,\label{eq:cyclic}<br />
+&amp;\text{(star)}&amp;&amp;{\mathbf{x}}^1        &amp;&amp;={\mathbf{x}}^d,\quad d = 2,\ldots, D,\label{eq:star}<br />
+&amp;\text{(symmetric)}\quad&amp;&amp;{\mathbf{x}}^d      &amp;&amp;=({\mathbf{x}}^1+\cdots+{\mathbf{x}}^D)/D\quad \forall d.\label{eq:symmetric}\end{aligned}$$
+We call such an instance a <em>decomposition</em>, and each decomposition will
+lead to a different algorithm.</p>
+
+<p>The augmented Lagrangian of  is defined by: $$\begin{gathered}
+\label{eq:lagrangian}
+    L<em>\rho({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D,{\mathbf{y}}) = F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) \ + {\mathbf{y}}^\top\left(\sum</em>{d=1}^D {\mathbf{A}}^d{\mathbf{x}}^d\right)
+    + \frac{\rho}{2}{\left| \sum_{d=1}^D {\mathbf{A}}^d{\mathbf{x}}^d \right|_2}^2,\end{gathered}$$
+where ${\mathbf{y}}$ is the <em>Lagrangian multiplier vector</em> and $\rho&gt;0$
+is called the <em>penalty parameter</em>.</p>
+
+<p>Standard ADMM [@boyd2011distributed] solves  by iterating:</p>
+
+<ol>
+<li><p>For $d=1,2,\ldots,D$: update ${\mathbf{x}}^{d^{(k+1)}}$ as a
+solution of $$\label{eq:update-x}
+        \min<em>{{\mathbf{x}}^d\in{\mathcal{X}}^d} L</em>\rho({\mathbf{x}}^{[1,d-1]^{(k+1)}},{\mathbf{x}}^d,{\mathbf{x}}^{[d+1,D]^{(k)}},{\mathbf{y}}^{(k)}).$$</p></li>
+
+<li><p>Update ${\mathbf{y}}$: $$\label{eq:update-y}
+        {\mathbf{y}}^{(k+1)} = {\mathbf{y}}^{(k)} + \rho\left(\sum_{d=1}^D{\mathbf{A}}^d{\mathbf{x}}^{d^{(k+1)}}\right).$$</p></li>
+</ol>
+
+<p>The algorithm converges if the following <em>residual</em> converges to $0$ as
+$k\to+\infty$: $$\label{eq:residual}
+r^{(k)} = {\left| \sum_{d=1}^D{\mathbf{A}}^d{\mathbf{x}}^{d^{(k)}} \right|<em>2}^2 + \sum</em>{d=1}^D{\left| {\mathbf{x}}^{d^{(k)}} - {\mathbf{x}}^{d^{(k-1)}} \right|_2}^2.$$</p>
+
+<p>We show how to solve the ${\mathbf{x}}$ update step  (the ${\mathbf{y}}$
+update  is trivial). Updating ${\mathbf{x}}^d$ consists of minimizing
+the augmented Lagrangian  with respect to the $d\textsuperscript{th}$
+block while fixing the other blocks.</p>
+
+<p>Since $F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D)$ is linear with respect
+to each block ${\mathbf{x}}^d$ ( ), it must have the form
+$$\label{eq:energy-factor-linear}
+F({\mathbf{x}}^{[1,d-1]},{\mathbf{x}}^d,{\mathbf{x}}^{[d+1,D]}) = {\left\langle {\mathbf{p}}^d,{\mathbf{x}}^d \right\rangle} + \mathrm{cst({\mathbf{x}}^d)},$$
+where $\mathrm{cst({\mathbf{x}}^d)}$ is a term that does not depend on
+${\mathbf{x}}^d$. Indeed, it can be shown (detailed in the supplement)
+that ${\mathbf{p}}^d=({\mathbf{p}}_1^d,\ldots,{\mathbf{p}}_n^d)$ where
+$$\begin{gathered}
+\label{eq:p}
+{\mathbf{p}}<em>i^d = \sum</em>{\alpha=d}^D \left( \sum_{i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}} {\mathbf{F}}_{i_1i<em>2\ldots i</em>\alpha} \bigotimes \right. \ \left.{\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^{d-1}</em>{i<em>{d-1}}, {\mathbf{x}}^{d+1}</em>{i<em>{d+1}},\ldots,{\mathbf{x}}^\alpha</em>{i<em>\alpha} \right}} \vphantom{\sum</em>{C=i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}}}\right) \forall i\in{\mathcal{V}}.\end{gathered}$$
+While the expression of ${\mathbf{p}}_i^d$ looks complicated, its
+intuition is simple: for a given node $i$ and a degree $d$, we search
+for all cliques satisfying two conditions: (a) their sizes are bigger
+than or equal to $d$, and (b) the node $i$ is at the
+$d\textsuperscript{th}$ position of these cliques; then for each clique,
+we multiply its potential tensor with all its nodes except node $i$, and
+sum all these products together.</p>
+
+<p>Denote $$\label{eq:sd}
+{\mathbf{s}}^d = \sum<em>{c=1}^{d-1}{\mathbf{A}}^c{\mathbf{x}}^c + \sum</em>{c=d+1}^{D}{\mathbf{A}}^c{\mathbf{x}}^c.$$
+Plugging  and  into  we get: $$\begin{gathered}
+\label{eq:lagrangian-quadratic}
+L_\rho({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D,{\mathbf{y}}) = \frac{\rho}{2}{\left| {\mathbf{A}}^d{\mathbf{x}}^d \right|<em>2}^2 \ + \left({\mathbf{p}}^d + {\mathbf{A}}^{d\top}{\mathbf{y}}+ \rho{\mathbf{A}}^{d\top}{\mathbf{s}}^d\right)^\top{\mathbf{x}}^d + \mathrm{cst({\mathbf{x}}^d)}.\end{gathered}$$
+Therefore, the ${\mathbf{x}}$ update  becomes minimizing the quadratic
+function  (with respect to ${\mathbf{x}}^d$) over ${\mathcal{X}}^d$.
+With suitable decompositions, this problem can have a much simpler form
+and can be efficiently solved. For example, if we choose the <em>cyclic</em>
+decomposition , then this step is reduced to finding the projection of a
+vector onto ${\mathcal{X}}^d$: $$\label{eq:projection}
+{\mathbf{x}}^{d^{(k+1)}} = {\operatornamewithlimits{argmin}}</em>{{\mathbf{x}}^d\in{\mathcal{X}}^d}{\left| {\mathbf{x}}^d - {\mathbf{c}}^{d^{(k)}}  \right|_2}^2,$$
+where $({\mathbf{c}}<em>d)</em>{1\le d \le D}$ are defined as follows
+(supplement): $$\begin{aligned}
+{\mathbf{c}}^{1^{(k)}} &amp;= {\mathbf{x}}^{2^{(k)}} - \frac{1}{\rho}\left({\mathbf{y}}^{2^{(k)}} + {\mathbf{p}}^{1^{(k)}}\right),\label{eq:cyclic-c1}<br />
+{\mathbf{c}}^{d^{(k)}} &amp;= \frac{1}{2}\left({\mathbf{x}}^{d-1^{(k+1)}} + {\mathbf{x}}^{d+1^{(k)}}\right)\label{eq:cyclic-cd}\ &amp;+ \frac{1}{2\rho}\left({\mathbf{y}}^{d^{(k)}} - {\mathbf{y}}^{d+1^{(k)}} - {\mathbf{p}}^{d^{(k)}}\right),\quad 2\le d\le D-1, \notag<br />
+{\mathbf{c}}^{D^{(k)}} &amp;= {\mathbf{x}}^{D-1^{(k+1)}} + \frac{1}{\rho}\left({\mathbf{y}}^{D^{(k)}} + {\mathbf{p}}^{D^{(k)}}\right). \label{eq:cyclic-cD}\end{aligned}$$
+Here the multiplier ${\mathbf{y}}$ is the concatenation of $(D-1)$
+vectors $({\mathbf{y}}^d)_{2\le d\le D}$, corresponding to $(D-1)$
+constraints in .</p>
+
+<p>Similar results can be obtained for other specific decompositions such
+as *star*  and *symmetric*  as well. We refer to the supplement for more
+details. As we observed very similar performance among these
+decompositions, only <em>cyclic</em> was included for evaluation
+(Section [sec:experiments]).</p>
+
+<p>The ADMM procedure are sketched in Algorithm [algo:ADMM-general].</p>
+
+<p>Initialization: $k\gets 0$, ${\mathbf{y}}^{(0)}\gets \mathbf{0}$ and
+${\mathbf{x}}^{d^{(0)}}\in{\mathcal{X}}^d$ for $d=1,\ldots,D$.
+[algo:ADMM-step]For $d=1,2,\ldots,D$: update
+${\mathbf{x}}^{d^{(k+1)}}$ by solving  (which is reduced to optimizing 
+over ${\mathcal{X}}^d$). Update ${\mathbf{y}}^{(k+1)}$ using . Let
+$k\gets k+1$ and go to Step [algo:ADMM-step].</p>
+
+<p>In practice, we found that the penalty parameter $\rho$ and the
+constraint sets $({\mathcal{X}}^d)_{1\le d\le D}$ can greatly affect the
+convergence as well as the solution quality of ADMM. Let us address
+these together with other practical considerations.</p>
+
+<h4 id="adaptive-penalty">Adaptive penalty</h4>
+
+<p>We observed that small $\rho$ leads to slower convergence but often
+better energy, and inversely for large $\rho$. To obtain a good
+trade-off, we follow [@lehuu2017adgm] and use the following adaptive
+scheme: initialize $\rho$ at a small value $\rho_0$ and run for $I_1$
+iterations, after that if no improvement of the residual $r^{(k)}$ is
+achieved every $I<em>2$ iterations, then we increase $\rho$ by a factor
+$\beta$. In addition, we stop increasing $\rho$ after it reaches some
+value $\rho</em>\mathrm{max}$, so that the convergence properties presented
+in the next section still apply. In the experiments, we normalize all
+the potentials to $[-1,1]$ and set
+$I_1 = 500, I_2 = 500, \beta = 1.2,\rho<em>0 = 0.001, \rho</em>\mathrm{max}=100$.</p>
+
+<h4 id="constraint-sets">Constraint sets</h4>
+
+<p>A trivial choice of $({\mathcal{X}}^d)_{1\le d\le D}$ that satisfies  is
+${\mathcal{X}}^d = {\mathcal{X}}\ \forall d$. Then,  becomes projections
+onto the simplex
+${\left{ {\mathbf{x}}_i \ | \ \mathbf{1}^\top{\mathbf{x}}_i = 1, {\mathbf{x}}_i\ge\mathbf{0} \right}}$
+for each node $i$, which can be solved using the method introduced
+in [@condat2016fast]. However, we found that this choice often produces
+poor quality solutions, despite converging quickly. The reason is that
+constraining all ${\mathbf{x}}_i^d$ to belong to a simplex will make
+them reach consensus faster, but without being allowed to vary more
+freely, they tend to bypass good solutions. The idea is to use looser
+constraint sets,
+${\mathcal{X}}^+ := {\left{ {\mathbf{x}}\ | \ {\mathbf{x}}\ge \mathbf{0} \right}}$,
+for which  becomes simply
+${\mathbf{x}}^{d^{(k+1)}} = \max({\mathbf{c}}^{d^{(k)}},0)$. We found
+that leaving only one set as ${\mathcal{X}}$ yields the best accuracy.
+Therefore, in our implementation we set
+${\mathcal{X}}^1 = {\mathcal{X}}$ and
+${\mathcal{X}}^d = {\mathcal{X}}^+\ \forall d \ge 2$.</p>
+
+<h4 id="parallelization">Parallelization</h4>
+
+<p>Since there is no dependency among the nodes in the constraint sets, the
+projection  is clearly reduced to <em>independent</em> projections at each
+node. Moreover, at each iteration, the expensive computation  of
+${\mathbf{p}}_i^{d}$ can also be performed in parallel for all nodes.
+Therefore, the proposed ADMM is highly parallelizable.</p>
+
+<h4 id="caching">Caching</h4>
+
+<p>Significant speed-ups can be achieved by avoiding re-computation of
+unchanged quantities. From  it is seen that ${\mathbf{p}}_i^d$ only
+depends on the decomposed variables at the neighbors of $i$. Thus, if
+these variables have not changed from the last iteration, then there is
+no need to recompute ${\mathbf{p}}_i^d$ in the current iteration.
+Similarly, the projection  for ${\mathbf{x}}_i^d$ can be omitted if
+${\mathbf{c}}_i^d$ is unchanged ( –).</p>
+
+<h1 id="convergence-analysis-sec-convergence-analysis">Convergence analysis {#sec:convergence-analysis}</h1>
+
+<p>In this section, we establish some convergence results for the presented
+methods. Due to space constraints, proofs are provided in the
+supplementary material.</p>
+
+<p>[def:stationary] Let $f:{\mathbb{R}}^d\to{\mathbb{R}}$ be a
+continuously differentiable function over a closed convex set
+${\mathcal{M}}$. A point ${\mathbf{u}}^*$ is called a <em>stationary point</em>
+of the problem $\min_{{\mathbf{u}}\in{\mathcal{M}}}f({\mathbf{u}})$ if
+and only if it satisfies $$\label{eq:stationary}
+    \nabla f({\mathbf{u}}^<em>)^\top ({\mathbf{u}}- {\mathbf{u}}^</em>) \ge 0 \quad\forall {\mathbf{u}}\in{\mathcal{M}}.$$</p>
+
+<p>Note that  is a necessary condition for a point ${\mathbf{u}}^*$ to be a
+local optimum (a proof can be found in [@bertsekas1999nonlinear],
+Chapter 2).</p>
+
+<p>[propos:PGD-FW-stationary] Let ${{\mathbf{x}}^{(k)}}$ be a sequence
+generated by BCD, PGD or FW (Algorithms [algo:BCD], [algo:PGD]
+or [algo:FW]) with line-search . Then every limit point<sup class="footnote-ref" id="fnref:3"><a rel="footnote" href="#fn:3">3</a></sup> of
+${{\mathbf{x}}^{(k)}}$ is stationary.</p>
+
+<p>Next, we give a convergence result for ADMM.</p>
+
+<p>[def:kkt] A point
+$({\mathbf{x}}^{*1},{\mathbf{x}}^{*2},\ldots,{\mathbf{x}}^{<em>D},{\mathbf{y}}^</em>)$
+is said to be a KKT point of Problem  if it satisfies the following KKT
+conditions: $$\begin{aligned}
+&amp;{\mathbf{x}}^{*d} \in{\mathcal{X}}^d, \qquad d=1,\ldots,D,<br />
+&amp;{\mathbf{A}}^1{\mathbf{x}}^{*1} + \cdots +{\mathbf{A}}^D{\mathbf{x}}^{*D} = \mathbf{0},\label{eq:kkt-linear-constraint}<br />
+&amp;{\mathbf{x}}^{<em>d} \in{\operatornamewithlimits{argmin}}_{{\mathbf{x}}^d\in{\mathcal{X}}^d} {\left{ F({\mathbf{x}}^{</em>[1,d-1]},{\mathbf{x}}^d,{\mathbf{x}}^{<em>[d+1,D]}) + {\mathbf{y}}^{</em>\top}{\mathbf{A}}^d{\mathbf{x}}^d \right}}.\label{eq:kkt-argmin)}\end{aligned}$$</p>
+
+<p>Note that  is equivalent to
+${\mathbf{x}}^{*1}={\mathbf{x}}^{*2}=\cdots={\mathbf{x}}^{<em>D}$ (because
+of ). Therefore, any KKT point of  must have the form
+$({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>,{\mathbf{y}}^</em>)$ for some vector
+${\mathbf{x}}^<em>$ and ${\mathbf{y}}^</em>$.</p>
+
+<p>[propos:KKT] Let
+${({\mathbf{x}}^{1^{(k)}},\ldots,{\mathbf{x}}^{D^{(k)}},{\mathbf{y}}^{(k)})}$
+be a sequence generated by ADMM (Algorithm [algo:ADMM-general]).
+Assume that the residual $r^{(k)}$  converges to $0$, then any limit
+point of this sequence is a KKT point of .</p>
+
+<p>We should note that this result is only partial, since we need the
+assumption that $r^{(k)}$ converges to $0$. In practice, we found that
+this assumption always holds if $\rho$ is large enough. Unlike gradient
+methods, convergence of ADMM for the kind of Problem  (which is at the
+same time multi-block, non-separable and highly nonconvex) is less known
+and is a current active research topic. For example, global convergence
+of ADMM for nonconvex nonsmooth functions is established
+in [@wang2015global], but under numerous assumptions that are not
+applicable to our case.</p>
+
+<p>So far for ADMM we have talked about solution to  only and not to . In
+fact, we have the following result.</p>
+
+<p>[propos:KKT-stationary] If
+$({\mathbf{x}}^<em>,{\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>,{\mathbf{y}}^</em>)$
+is a KKT point of  then ${\mathbf{x}}^*$ is a stationary point of .</p>
+
+<p>An interesting relation of the solutions returned by the methods is the
+following. We say a method A can improve further a method B if we use
+the returned solution by B as initialization for A and A will output a
+better solution.</p>
+
+<p>[propos:methods-compare] At convergence:</p>
+
+<ol>
+<li><p>BCD, PGD and FW cannot improve further each other.</p></li>
+
+<li><p>BCD, PGD and FW cannot improve further ADMM. The inverse is not
+necessarily true.</p></li>
+</ol>
+
+<p>The first point follows from the fact that solutions of BCD, PGD and FW
+are stationary. The second point follows from
+Proposition [propos:KKT-stationary]. In practice, we observed that
+ADMM can often improve further the other methods.</p>
+
+<h1 id="experiments-sec-experiments">Experiments {#sec:experiments}</h1>
+
+<p>We compare the proposed nonconvex relaxation methods (BCD, PGD, FW and
+ADMM with cyclic decomposition) with the following ones (where the first
+four are only applicable to pairwise MRFs): $\alpha$-expansion
+($\alpha$-Exp) [@boykov2001fast], fast primal-dual
+(FastPD) [@komodakis2008performance], convex QP relaxation
+(CQP) [@ravikumar2006quadratic], sequential tree reweighted message
+passing (TRWS) [@kolmogorov2006convergent], tree reweighted belief
+propagation (TRBP) [@wainwright2005map], alternating direction dual
+decomposition (ADDD) [@martins2015ad3], bundle dual
+decomposition<sup class="footnote-ref" id="fnref:4"><a rel="footnote" href="#fn:4">4</a></sup> (BUNDLE) [@kappes2012bundle], max-product linear
+programming (MPLP) [@globerson2008fixing] and its extension
+(MPLP-C) [@sontag2012efficiently], extension of $\alpha$-expansion to
+higher-order using reduction technique
+($\alpha$-Fusion) [@fix2011graph], generalization of TRWS to
+higher-order (SRMP) [@kolmogorov2015new]. The code of most methods are
+obtained via either the OpenGM library [@opengm-library] or from the
+authors’ websites, except for CQP [@ravikumar2006quadratic] we use our
+implementation as no code is publicly available (supplement for
+implementation details).</p>
+
+<p>For BCD, PGD and FW, we run for $5$ different initializations (solution
+of the unary potentials plus $4$ other completely random) and pick the
+best one. For ADMM, we use a <em>single</em> homogeneous initial solution:
+$x_i(s) = \frac{1}{{\left| {\mathcal{S}}_i \right|}}\forall s\in {\mathcal{S}}_i$
+(we find that ADMM is quite insensitive to initialization). For these
+methods, BCD is used as a final rounding step.<sup class="footnote-ref" id="fnref:5"><a rel="footnote" href="#fn:5">5</a></sup></p>
+
+<p>[lcccccc]{} Model &amp; No.^$*$^ &amp; ${\left| {\mathcal{V}}\right|}$^$**$^ &amp;
+$S$^$\dagger$^ &amp; $D$^$\ddagger$^ &amp; Structure &amp; Function<br />
+Inpainting &amp; 4 &amp; 14400 &amp; 4 &amp; 2 &amp; grid-N4/N8 &amp; Potts<br />
+Matching &amp; 4 &amp; $\sim$20 &amp; $\sim$20 &amp; 2 &amp; full/sparse &amp; general<br />
+1^st^ stereo &amp; 3 &amp; $\sim$100000 &amp; 16-60 &amp; 2 &amp; grid-N4 &amp; TL/TS<br />
+Segmentation &amp; 10 &amp; 1024 &amp; 4 &amp; 4 &amp; grid-N4 &amp; g-Potts<br />
+2^nd^ stereo &amp; 4 &amp; $\sim$25000 &amp; 14 &amp; 3 &amp; grid-N4 &amp; general</p>
+
+<p>The methods are evaluated on several real-world vision tasks: image
+inpainting, feature matching, image segmentation and stereo
+reconstruction. All methods are included whenever applicable. A summary
+of the models are given in Table [tab:models]. Except for higher-order
+stereo, these models were previously considered in a recent benchmark
+for evaluating MRF optimization methods [@kappes2015ijcv], and their
+model files are publicly available<sup class="footnote-ref" id="fnref:6"><a rel="footnote" href="#fn:6">6</a></sup>. For higher-order stereo, we use
+the model presented in [@woodford2009global], where the disparity map is
+encouraged to be piecewise smooth using a second-order prior, and the
+labels are obtained from $14$ pre-generated piecewise-planar proposals.
+We apply this model to $4$ image pairs (<em>art, cones, teddy, venus</em>) of
+the Middlebury dataset <a href="at half resolution, due to
+the high inference time" target="_blank">@scharstein2003high</a>. We refer to [@kappes2015ijcv] and to the
+supplement for further details on all models.</p>
+
+<p>[lrarrarrarrar]{} &amp; &amp; &amp; &amp;<br />
+algorithm &amp; time (s) &amp; value &amp; bound &amp; time (s) &amp; value &amp; bound &amp; time
+(s) &amp; value &amp; bound &amp; time (s) &amp; value &amp; bound<br />
+$\alpha$-Exp&amp; $   0.02$ &amp; $ \mathbf{454.35}$ &amp; $-\infty$ &amp; $   0.78$ &amp;
+$ 465.02$ &amp; $-\infty$ &amp; $  -^<em>$ &amp; $  -^</em>$ &amp; $-^<em>$ &amp; $  14.75$ &amp;
+$   1617196.00$ &amp; $-\infty$<br />
+FastPD &amp; $   0.03$ &amp; $ 454.75$ &amp; $ 294.89$ &amp; $   0.15$ &amp; $ 465.02$ &amp;
+$ 136.28$ &amp; $  -^</em>$ &amp; $  -^<em>$ &amp; $-^</em>$ &amp; $   7.14$ &amp; $   1614255.00$ &amp;
+$301059.33$<br />
+TRBP &amp; $  23.45$ &amp; $ 480.27$ &amp; $-\infty$ &amp; $  64.00$ &amp; $ 495.80$ &amp;
+$-\infty$ &amp; $   0.00$ &amp; $1.05\times 10^{11}$ &amp; $-\infty$ &amp; $2544.12$ &amp;
+$   1664504.33$ &amp; $-\infty$<br />
+ADDD &amp; $  15.87$ &amp; $ 483.41$ &amp; $ 443.71$ &amp; $  35.78$ &amp; $ 605.14$ &amp;
+$ 450.95$ &amp; $   3.16$ &amp; $1.05\times 10^{11}$ &amp; $  16.35$ &amp; $-^{<strong>}$ &amp;
+$-^{</strong>}$ &amp; $-^{<strong>}$<br />
+MPLP &amp; $  55.32$ &amp; $ 497.16$ &amp; $ 411.94$ &amp; $ 844.97$ &amp; $ 468.97$ &amp;
+$ 453.55$ &amp; $   0.47$ &amp; $0.65\times 10^{11}$ &amp; $  15.16$ &amp; $-^{</strong>}$ &amp;
+$-^{<strong>}$ &amp; $-^{</strong>}$<br />
+MPLP-C &amp; $1867.20$ &amp; $ 468.88$ &amp; $ 448.03$ &amp; $2272.39$ &amp; $ 479.54$ &amp;
+$ 454.35$ &amp; $   6.04$ &amp; $  \mathbf{21.22}$ &amp; $  21.22$ &amp; $-^{<strong>}$ &amp;
+$-^{</strong>}$ &amp; $-^{**}$<br />
+BUNDLE &amp; $  36.18$ &amp; $ 455.25$ &amp; $ 448.23$ &amp; $ 111.74$ &amp; $ 465.26$ &amp;
+$ 455.43$ &amp; $   2.33$ &amp; $0.10\times 10^{11}$ &amp; $  14.47$ &amp; $2039.47$ &amp;
+$   1664707.67$ &amp; $   1583742.13$<br />
+TRWS &amp; $   1.37$ &amp; $ 490.48$ &amp; $ 448.09$ &amp; $  16.23$ &amp; $ 500.09$ &amp;
+$ 453.96$ &amp; $   0.05$ &amp; $  64.19$ &amp; $  15.22$ &amp; $ 421.20$ &amp;
+$   \mathbf{1587961.67}$ &amp; $   1584746.58$<br />
+CQP &amp; $   1.92$ &amp; $1399.51$ &amp; $-\infty$ &amp; $  11.62$ &amp; $1178.91$ &amp;
+$-\infty$ &amp; $   0.08$ &amp; $ 127.01$ &amp; $-\infty$ &amp; $3602.01$ &amp;
+$  11408446.00$ &amp; $-\infty$<br />
+BCD &amp; $   0.11$ &amp; $ 485.88$ &amp; $-\infty$ &amp; $   0.29$ &amp; $ 481.95$ &amp;
+$-\infty$ &amp; $   0.00$ &amp; $  84.86$ &amp; $-\infty$ &amp; $  10.82$ &amp;
+$   7022189.00$ &amp; $-\infty$<br />
+FW &amp; $   1.10$ &amp; $ 488.23$ &amp; $-\infty$ &amp; $   5.94$ &amp; $ 489.82$ &amp;
+$-\infty$ &amp; $  20.10$ &amp; $  66.71$ &amp; $-\infty$ &amp; $1989.12$ &amp;
+$   6162418.00$ &amp; $-\infty$<br />
+PGD &amp; $   0.81$ &amp; $ 489.80$ &amp; $-\infty$ &amp; $   5.19$ &amp; $ 489.82$ &amp;
+$-\infty$ &amp; $  13.21$ &amp; $  58.52$ &amp; $-\infty$ &amp; $1509.49$ &amp;
+$   5209092.33$ &amp; $-\infty$<br />
+ADMM &amp; $   9.84$ &amp; $ \mathbf{454.35}$ &amp; $-\infty$ &amp; $  40.64$ &amp;
+$ \mathbf{464.76}$ &amp; $-\infty$ &amp; $   0.31$ &amp; $  75.12$ &amp; $-\infty$ &amp;
+$2377.66$ &amp; $   1624106.00$ &amp; $-\infty$</p>
+
+<p>The experiments were carried out on a $64$-bit Linux machine with a
+$3.4$GHz processor and $32$GB of memory. A time limit of $1$ hour was
+set for all methods. In Tables [tab:pairwise] and [tab:high-order],
+we report the runtime<sup class="footnote-ref" id="fnref:7"><a rel="footnote" href="#fn:7">7</a></sup>, the energy value of the final integer
+solution as well as the lower bound if available, averaged over all
+instances of a particular model. The detailed results are given in the
+supplement.</p>
+
+<p>In general, ADMM significantly outperforms BCD, PGD, FW and is the only
+nonconvex relaxation method that compares favorably with the other
+methods. In particular, it outperforms TRBP, ADDD, BUNDLE, MPLP, MPLP-C
+and CQP on all models (except MPLP-C on matching), and outperforms
+FastPD, $\alpha$-Exp/$\alpha$-Fusion and TRWS on small or medium sized
+models (other than stereo).</p>
+
+<p>On image inpainting (Table [tab:pairwise]), ADMM produces the lowest
+energies on all instances, while being relatively fast. Surprisingly
+TRWS performs poorly on these models, even worse than BCD, PGD and FW.</p>
+
+<p>The feature matching model (Table [tab:pairwise]) is a typical example
+showing that the standard LP relaxation can be very loose. All methods
+solving its dual produce very poor results (despite reaching relatively
+good lower bounds). They are largely outperformed by TRWS and nonconvex
+relaxation methods (BCD, PGD, FW, ADMM). On this problem, MPLP-C reaches
+the global optimum for all instances.</p>
+
+<p>[lrarrar]{} &amp; &amp;<br />
+algorithm &amp; time (s) &amp; value &amp; bound &amp; time (s) &amp; value &amp; bound<br />
+$\alpha$-Fusion &amp; $   0.05$ &amp; $1587.13$ &amp; $-\infty$ &amp; $  50.03$ &amp;
+$ 14035.91$ &amp; $-\infty$<br />
+TRBP &amp; $  18.20$ &amp; $1900.84$ &amp; $-\infty$ &amp; $3675.90$ &amp; $ 14087.40$ &amp;
+$-\infty$<br />
+ADDD &amp; $   6.36$ &amp; $3400.81$ &amp; $1400.33$ &amp; $4474.83$ &amp; $ 14226.93$ &amp;
+$ 13752.73$<br />
+MPLP &amp; $   9.68$ &amp; $4000.44$ &amp; $1400.30$ &amp; $  -^<em>$ &amp; $        -^</em>$ &amp;
+$-^<em>$<br />
+MPLP-C &amp; $3496.50$ &amp; $4000.41$ &amp; $1400.35$ &amp; $  -^</em>$ &amp; $        -^<em>$ &amp;
+$-^</em>$<br />
+BUNDLE &amp; $ 101.56$ &amp; $4007.73$ &amp; $1392.01$ &amp; $3813.84$ &amp; $ 15221.19$ &amp;
+$ 13321.96$<br />
+SRMP &amp; $   0.13$ &amp; $\mathbf{1400.57}$ &amp; $1400.57$ &amp; $3603.41$ &amp;
+$ \mathbf{13914.82}$ &amp; $ 13900.87$<br />
+BCD &amp; $   0.14$ &amp; $ 12518.59$ &amp; $-\infty$ &amp; $  59.59$ &amp; $ 14397.22$ &amp;
+$-\infty$<br />
+FW &amp; $  21.23$ &amp; $5805.17$ &amp; $-\infty$ &amp; $1749.19$ &amp; $ 14272.54$ &amp;
+$-\infty$<br />
+PGD &amp; $  51.04$ &amp; $5513.02$ &amp; $-\infty$ &amp; $3664.92$ &amp; $ 14543.65$ &amp;
+$-\infty$<br />
+ADMM &amp; $  97.37$ &amp; $1400.68$ &amp; $-\infty$ &amp; $3662.13$ &amp; $ 14068.53$ &amp;
+$-\infty$</p>
+
+<p>On image segmentation (Table [tab:high-order]), SRMP performs
+exceptionally well, producing the global optimum for all instances while
+being very fast. ADMM is only slightly outperformed by SRMP in terms of
+energy value, while both clearly outperform the other methods.</p>
+
+<p>On large scale models such as stereo, TRWS/SRMP perform best in terms of
+energy value, followed by move making algorithms (FastPD,
+$\alpha$-Exp/$\alpha$-Fusion) and ADMM. An example of estimated
+disparity maps is given in Figure [fig:stereo] for SRMP and nonconvex
+relaxation methods. Results for all methods are given in the supplement.</p>
+
+<p>An interesting observation is that CQP performs worse than nonconvex
+methods on all models (and worst overall), which means simply solving
+the QP relaxation in a straightforward manner is already better than
+adding a sophisticated convexification step, as done
+in [@ravikumar2006quadratic].</p>
+
+<p>[0.30]{} <img src="cones_disp2" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.30]{} <img src="cones_small_srmp" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.30]{} <img src="cones_small_bcd0" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p></p>
+
+<p>[0.30]{} <img src="cones_small_fw0" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.30]{} <img src="cones_small_pgd0" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.30]{} <img src="cones_small_admm0" alt="\[fig:stereo\]Estimated disparity maps and energy values on
+higher-order stereo
+model." title="fig:" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<h1 id="conclusion-sec-conclusion">Conclusion {#sec:conclusion}</h1>
+
+<p>We have presented a tight nonconvex continuous relaxation for the
+problem of MAP inference and studied four different methods for solving
+it: block coordinate descent, projected gradient descent, Frank-Wolfe
+algorithm, and ADMM. Due to the high nonconvexity, it is very
+challenging to obtain good solutions to this relaxation, as shown by the
+performance of the first three methods. The latter, however, outperforms
+many existing methods and thus demonstrates that directly solving the
+nonconvex relaxation can lead to very accurate results. These methods
+are memory efficient, thanks to the small number of variables and
+constraints (as discussed in Section [sec:relaxation]). On top of
+that, the proposed ADMM algorithm is also highly parallelizable (as
+discussed in Section [sec:admm]), which is not the case for methods
+like TRWS or SRMP. Therefore, ADMM is also suitable for distributed or
+real-time applications on GPUs.</p>
+
+<h4 id="acknowledgements">Acknowledgements</h4>
+
+<p>This research was partially supported by the ERC grant Diocles
+(ERC-STG-259112) and the Partner University Fund 4D Vision project. The
+authors thank Jean-Christophe Pesquet for useful discussion on
+gradient-based methods, and thank the anonymous reviewers for their
+insightful comments.</p>
+
+<h1 id="proofs-append-proofs">Proofs {#append:proofs}</h1>
+
+<h2 id="proof-of-proposition-propos-bcd-fixed-point">Proof of Proposition [propos:bcd-fixed-point]</h2>
+
+<p>Clearly, BCD stops when there is no <em>strict</em> descent of the energy.
+Since the solution at each iteration is discrete and the number of nodes
+as well as the number of labels are finite, BCD must stop after a finite
+number of iterations. Suppose that this number is $k$:
+$E({\mathbf{x}}^{(k+1)}) = E({\mathbf{x}}^{(k)})$. At each inner
+iteration (Step 2 in Algorithm [algo:BCD]), the label of a node is
+changed to a new label only if the new label can produce <em>strictly</em>
+lower energy. Therefore, the labeling of ${\mathbf{x}}^{(k+1)}$ and
+${\mathbf{x}}^{(k)}$ must be the same because they have the same energy,
+which implies ${\mathbf{x}}^{(k+1)} = {\mathbf{x}}^{(k)}$,
+${\mathbf{x}}^{(k)}$ is a fixed point.</p>
+
+<h2 id="proof-of-equation-eq-p">Proof of Equation ([eq:p])</h2>
+
+<p>Recall from  that $$\label{eq:energy-decomposed-alpha}
+F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) = \sum<em>{\alpha=1}^D \sum</em>{i<em>1\ldots i</em>\alpha\in{\mathcal{C}}} {\mathbf{F}}_{i<em>1\ldots i</em>\alpha} \bigotimes {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^\alpha</em>{i<em>\alpha} \right}},$$
+Clearly, the terms corresponding to any $\alpha &lt; d$ do not involve
+${\mathbf{x}}^d$. Thus, we can rewrite the above as $$\begin{gathered}
+F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) = \mathrm{cst({\mathbf{x}}^d)} \ +  \sum</em>{\alpha=d}^D \sum_{i<em>1\ldots i</em>\alpha\in{\mathcal{C}}} {\mathbf{F}}_{i<em>1\ldots i</em>\alpha} \bigotimes {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^\alpha</em>{i<em>\alpha} \right}}.\label{eq:p-double-sum}\end{gathered}$$
+We will show that the last double sum can be written as
+$\sum</em>{i\in{\mathcal{V}}}{\left\langle {\mathbf{p}}_i^d,{\mathbf{x}}_i^d \right\rangle}$,
+where ${\mathbf{p}}_i^d$ is given by . The idea is to regroup, for each
+node $i$, all terms that contain ${\mathbf{x}}<em>i$. Indeed, for a given
+$d$ we have the identity:
+$$\sum</em>{i_1i<em>2\ldots i</em>\alpha\in{\mathcal{C}}} =  \sum_{i<em>d\in{\mathcal{V}}} \sum</em>{i<em>1\ldots i</em>{d-1}i<em>di</em>{d+1}\ldots i<em>\alpha \in{\mathcal{C}}}.$$
+Therefore, the double sum in  becomes
+$$\sum</em>{\alpha=d}^D\sum_{i<em>d\in{\mathcal{V}}} \sum</em>{i<em>1\ldots i</em>{d-1}i<em>di</em>{d+1}\ldots i<em>\alpha \in{\mathcal{C}}} {\mathbf{F}}</em>{i<em>1\ldots i</em>\alpha} \bigotimes {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^\alpha</em>{i<em>\alpha} \right}}.$$
+Rearranging the first and second sums we obtain
+$$\sum</em>{i<em>d\in{\mathcal{V}}} \sum</em>{\alpha=d}^D \sum_{i<em>1\ldots i</em>{d-1}i<em>di</em>{d+1}\ldots i<em>\alpha \in{\mathcal{C}}} {\mathbf{F}}</em>{i<em>1\ldots i</em>\alpha} \bigotimes {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^\alpha</em>{i_\alpha} \right}}.$$
+With the change of variable $i\gets i<em>d$ this becomes $$\begin{gathered}
+\sum</em>{i\in{\mathcal{V}}} \sum<em>{\alpha=d}^D \sum</em>{i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}} {\mathbf{F}}_{i<em>1\ldots i</em>\alpha} \bigotimes {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^\alpha</em>{i_\alpha} \right}}.\end{gathered}$$
+Now by factoring out ${\mathbf{x}}_i^d$ for each $i\in{\mathcal{V}}$ the
+above becomes</p>
+
+<p>$$\begin{gathered}
+\sum<em>{i\in{\mathcal{V}}} \left(\sum</em>{\alpha=d}^D \sum_{i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}} {\mathbf{F}}_{i_1i<em>2\ldots i</em>\alpha} \bigotimes \right. \ \left. {\left{ {\mathbf{x}}^1_{i<em>1},\ldots,{\mathbf{x}}^{d-1}</em>{i<em>{d-1}}, {\mathbf{x}}^{d+1}</em>{i<em>{d+1}},\ldots,{\mathbf{x}}^\alpha</em>{i<em>\alpha} \right}} \vphantom{\sum</em>{i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}}}\right)^\top {\mathbf{x}}_i^d,\end{gathered}$$</p>
+
+<p>which is
+$\sum_{i\in{\mathcal{V}}}{\left\langle {\mathbf{p}}_i^d,{\mathbf{x}}_i^d \right\rangle}$,
+where ${\mathbf{p}}_i^d$ is given by , QED.</p>
+
+<h2 id="proof-of-equations-eq-cyclic-c1-eq-cyclic-cd">Proof of Equations ([eq:cyclic-c1])–([eq:cyclic-cD])</h2>
+
+<p>See Appendix [append:admm], page  on the details of ADMM.</p>
+
+<h2 id="proof-of-proposition-propos-pgd-fw-stationary">Proof of Proposition [propos:PGD-FW-stationary]</h2>
+
+<p>For PGD and FW, the result holds for general continuously differentiable
+function $E(\cdot)$ and closed convex set ${\mathcal{X}}$. We refer
+to <a href="Sections 2.2.2 and 2.3.2" target="_blank">@bertsekas1999nonlinear</a> for a proof.
+Below we give a proof for BCD.</p>
+
+<p>In Proposition [propos:bcd-fixed-point] we have shown that BCD reaches
+a discrete fixed point ${\mathbf{x}}^{(k)}$ after a finite number of
+iterations $k$. Now, we show that this fixed point is stationary. Define
+$\Delta_i = {\left{ {\mathbf{u}}\in{\mathbb{R}}^{{\left| {\mathcal{S}}<em>i \right|}}: {\mathbf{u}}\ge \mathbf{0}, \mathbf{1}^\top {\mathbf{u}}= 1 \right}}\ \forall i\in{\mathcal{V}}$
+and let ${\mathbf{x}}^* = {\mathbf{x}}^{(k+1)}={\mathbf{x}}^{(k)}$. At
+the last $i\textsuperscript{th}$ inner iteration  we have:
+$$E({\mathbf{x}}</em>{[1,i-1]}^{(k+1)},{\mathbf{x}}<em>i,{\mathbf{x}}</em>{[i+1,n]}^{(k)}) \ge E({\mathbf{x}}_{[1,i-1]}^{(k+1)},{\mathbf{x}}<em>i^{(k+1)},{\mathbf{x}}</em>{[i+1,n]}^{(k)})$$
+for all ${\mathbf{x}}_i\in\Delta<em>i$, which is
+$$E({\mathbf{x}}</em>{[1,i-1]}^<em>,{\mathbf{x}}<em>i,{\mathbf{x}}</em>{[i+1,n]}^</em>) \ge E({\mathbf{x}}_{[1,i-1]}^<em>,{\mathbf{x}}_i^</em>,{\mathbf{x}}_{[i+1,n]}^<em>)$$
+for all ${\mathbf{x}}_i\in\Delta_i$. Define for each $i$ the function
+$$E_i^</em>({\mathbf{x}}_i) = E({\mathbf{x}}<em>1^*,\ldots,{\mathbf{x}}</em>{i-1}^<em>,{\mathbf{x}}<em>i,{\mathbf{x}}</em>{i+1}^</em>,\ldots,{\mathbf{x}}_n^<em>).$$
+Obviously $E_i^</em>({\mathbf{x}}_i)$ is continuously differentiable as it
+is linear. Since ${\mathbf{x}}_i^<em>$ is a minimizer of
+$E_i^</em>({\mathbf{x}}_i)$ over $\Delta_i$, which is closed and convex,
+according to  (which is a necessary optimality condition) we have
+$\nabla E_i^<em>({\mathbf{x}}_i^</em>)^\top({\mathbf{x}}_i - {\mathbf{x}}_i^<em>)\ge 0\ \forall {\mathbf{x}}_i\in\Delta_i$.
+Notice that $$\nabla E({\mathbf{x}}^</em>) = \begin{bmatrix}
+\frac{\partial E({\mathbf{x}}^<em>)}{\partial {\mathbf{x}}_1} <br />
+\vdots <br />
+\frac{\partial E({\mathbf{x}}^</em>)}{\partial {\mathbf{x}}_n}
+\end{bmatrix} =
+\begin{bmatrix}
+\nabla E_1^<em>({\mathbf{x}}_1^</em>) <br />
+\vdots <br />
+\nabla E_n^<em>({\mathbf{x}}_n^</em>)
+\end{bmatrix},$$ we have
+$$\nabla E({\mathbf{x}}^<em>)^\top({\mathbf{x}}- {\mathbf{x}}^</em>) =  \sum_{i=1}^n   \nabla E_i^<em>({\mathbf{x}}_i^</em>)^\top({\mathbf{x}}_i - {\mathbf{x}}_i^<em>).$$
+Since each term in the last sum is non-negative, we have
+$\nabla E({\mathbf{x}}^</em>)^\top({\mathbf{x}}- {\mathbf{x}}^<em>) \ge 0\ \forall{\mathbf{x}}\in{\mathcal{X}}$,
+${\mathbf{x}}^</em>$ is stationary.</p>
+
+<h2 id="proof-of-proposition-propos-kkt">Proof of Proposition [propos:KKT]</h2>
+
+<p>By Definition [def:kkt], a point
+$({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D,{\mathbf{y}})$ is a KKT of  if
+and only if it has the form
+$({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>,{\mathbf{y}}^<em>)$ (where
+${\mathbf{x}}^</em>\in{\mathcal{X}}$) and at the same time satisfies
+$$\label{eq:kkt-appendix}
+{\mathbf{x}}^{<em>d} \in{\operatornamewithlimits{argmin}}_{{\mathbf{x}}^d\in{\mathcal{X}}^d} {\left{ F({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>,{\mathbf{x}}^d,{\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>) + {\mathbf{y}}^{</em>\top}{\mathbf{A}}^d{\mathbf{x}}^d \right}}$$
+for all $d$, which is <em>equivalent</em> to $$\begin{gathered}
+\label{eq:kkt-appendix-inequality}
+\left(\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>) + {\mathbf{A}}^{d\top}{\mathbf{y}}^<em>\right)^\top({\mathbf{x}}^d-{\mathbf{x}}^</em>) \ge 0\ \forall{\mathbf{x}}^d\in{\mathcal{X}}^d,\forall d.\end{gathered}$$
+The equivalence (“$\Leftrightarrow$”) follows from the fact that the
+objective function (with respect to ${\mathbf{x}}^d$) in  is convex.
+This is a well-known result in convex analysis, which we refer to
+Bertsekas, Dimitri P., Angelia Nedi, and Asuman E. Ozdaglar. <em>Convex
+analysis and optimization.</em>&rdquo; (2003) (Proposition 4.7.2) for a proof.
+Note that from the necessary optimality condition  we can only have the
+“$\Rightarrow$” direction.</p>
+
+<p>We need to prove that the sequence
+${({\mathbf{x}}^{1^{(k)}},\ldots,{\mathbf{x}}^{D^{(k)}},{\mathbf{y}}^{(k)})}$
+generated by ADMM satisfies the above conditions (under the assumption
+that the residual $r^{(k)}$ converges to $0$).</p>
+
+<p>Let
+$({\mathbf{x}}^{*1},{\mathbf{x}}^{*2},\ldots,{\mathbf{x}}^{<em>D},{\mathbf{y}}^</em>)$
+be a limit point of
+${({\mathbf{x}}^{1^{(k)}},\ldots,{\mathbf{x}}^{D^{(k)}},{\mathbf{y}}^{(k)})}$
+(thus ${\mathbf{x}}^{*d}\in{\mathcal{X}}^d\ \forall d$ since
+$({\mathcal{X}}^d)<em>{1\le d\le D}$ are closed), and define a subsequence
+that converges to this limit point by
+${({\mathbf{x}}^{1^{(l)}},\ldots,{\mathbf{x}}^{D^{(l)}},{\mathbf{y}}^{(l)})}$,
+$l\in{\mathcal{L}}\subset \mathbb{N}$ where ${\mathcal{L}}$ denotes the
+set of indices of this subsequence. We have $$\label{eq:lim-subsequence}
+\lim\limits</em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} ({\mathbf{x}}^{1^{(l)}},\ldots,{\mathbf{x}}^{D^{(l)}},{\mathbf{y}}^{(l)}) = ({\mathbf{x}}^{*1},{\mathbf{x}}^{*2},\ldots,{\mathbf{x}}^{<em>D},{\mathbf{y}}^</em>).$$
+Since the residual $r^{(k)}$  converges to $0$, we have
+$$\begin{aligned}
+\lim\limits<em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}}\left(\sum</em>{d=1}^D{\mathbf{A}}^d{\mathbf{x}}^{d^{(l)}}\right) &amp;= \mathbf{0},\label{eq:lim-primal-residual}<br />
+\lim\limits<em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}}\left({\mathbf{x}}^{d^{(l+1)}} - {\mathbf{x}}^{d^{(l)}}\right) &amp;= \mathbf{0} \quad \forall d.\label{eq:lim-dual-residual}\end{aligned}$$
+On the one hand, combining  and  we get $$\begin{gathered}
+\label{eq:lim-subsequence-2}
+\lim\limits</em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} ({\mathbf{x}}^{1^{(l+1)}},\ldots,{\mathbf{x}}^{D^{(l+1)}},{\mathbf{y}}^{(l+1)}) \ = ({\mathbf{x}}^{*1},{\mathbf{x}}^{*2},\ldots,{\mathbf{x}}^{<em>D},{\mathbf{y}}^</em>).\end{gathered}$$
+(Note that the above is different from  because $l+1$ might not belong
+to ${\mathcal{L}}$.) On the other hand, combining  and  we get
+$$\sum<em>{d=1}^D{\mathbf{A}}^d{\mathbf{x}}^{*d} = \mathbf{0},$$ which is,
+according to , equivalent to
+$${\mathbf{x}}^{*1} = {\mathbf{x}}^{*2} = \cdots = {\mathbf{x}}^{<em>D}.$$
+Let ${\mathbf{x}}^</em>\in{\mathcal{X}}$ denote the value of these vectors.
+From  and  we have $$\begin{aligned}
+{3}
+\lim\limits</em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} {\mathbf{x}}^{d^{(l)}} &amp;= \lim\limits<em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} {\mathbf{x}}^{d^{(l+1)}} &amp;&amp;= {\mathbf{x}}^* \quad\forall d, \label{eq:lim-x} <br />
+\lim\limits</em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} {\mathbf{y}}^{(l)} &amp;= \lim\limits_{\substack{l\to +\infty \ l\in{\mathcal{L}}}} {\mathbf{y}}^{(l+1)} &amp;&amp;= {\mathbf{y}}^*. \label{eq:lim-y}\end{aligned}$$</p>
+
+<p>It only remains to prove that
+$({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>,{\mathbf{y}}^<em>)$ satisfies . Let
+us denote for convenience
+$${\mathbf{z}}<em>d^{(k)} = ({\mathbf{x}}^{[1,d]^{(k+1)}},{\mathbf{x}}^{[d+1,D]^{(k)}}) \quad\forall d.$$
+According to , the ${\mathbf{x}}$ update  implies $$\begin{gathered}
+\label{eq:dL-optimality}
+\left(\frac{\partial L</em>\rho}{\partial {\mathbf{x}}^d} ({\mathbf{z}}<em>d^{(k)},{\mathbf{y}}^{(k)})\right)^\top \left({\mathbf{x}}^d - {\mathbf{x}}^{d^{(k+1)}}\right) \ \ge 0\quad\forall {\mathbf{x}}^d\in{\mathcal{X}}^d, \forall d, \forall k.\end{gathered}$$
+Since $L</em>\rho$  is continuously differentiable, applying  and  we obtain
+$$\begin{gathered}
+\label{eq:dL-lim}
+\lim\limits<em>{\substack{l\to +\infty \ l\in{\mathcal{L}}}} \frac{\partial L</em>\rho}{\partial {\mathbf{x}}^d}({\mathbf{z}}<em>d^{(l)},{\mathbf{y}}^{(l)}) = \frac{\partial L</em>\rho}{\partial {\mathbf{x}}^d}({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>,{\mathbf{y}}^</em>)\quad\forall d.\end{gathered}$$
+Let $k=l$ in  and take the limit of that inequality, taking into
+account  and , we get
+$$\left(\frac{\partial L<em>\rho}{\partial {\mathbf{x}}^d}({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>,{\mathbf{y}}^<em>)\right)^\top({\mathbf{x}}^d - {\mathbf{x}}^</em>) \ge 0\quad \forall {\mathbf{x}}^d\in{\mathcal{X}}^d,\forall d.$$
+From the definition of $L</em>\rho$  we have $$\begin{aligned}
+&amp;\frac{\partial L<em>\rho}{\partial {\mathbf{x}}^d}({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>,{\mathbf{y}}^<em>) \notag <br />
+= &amp;\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>) + {\mathbf{A}}^{d\top}{\mathbf{y}}^</em> + \rho{\mathbf{A}}^{d\top}\left(\sum</em>{d=1}^D {\mathbf{A}}^d{\mathbf{x}}^<em>\right) \notag <br />
+= &amp;\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>) + {\mathbf{A}}^{d\top}{\mathbf{y}}^</em>.\end{aligned}$$
+Note that the last equality follows from . Plugging the above into the
+last inequality we obtain $$\begin{gathered}
+\left(\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>) + {\mathbf{A}}^{d\top}{\mathbf{y}}^<em>\right)^\top({\mathbf{x}}^d - {\mathbf{x}}^</em>) \ge 0\ \forall {\mathbf{x}}^d\in{\mathcal{X}}^d,\forall d,\end{gathered}$$
+which is exactly , and this completes the proof.</p>
+
+<h2 id="proof-of-proposition-propos-kkt-stationary">Proof of Proposition [propos:KKT-stationary]</h2>
+
+<p>Let $({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>,{\mathbf{y}}^<em>)$ be a KKT
+point of . We have seen in the previous proof that $$\begin{gathered}
+\label{eq:kkt-appendix-inequality-2}
+\left(\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^<em>) + {\mathbf{A}}^{d\top}{\mathbf{y}}^</em>\right)^\top({\mathbf{x}}^d-{\mathbf{x}}^*) \ge 0\ \forall{\mathbf{x}}^d\in{\mathcal{X}}^d,\forall d.\end{gathered}$$</p>
+
+<p>According to :
+$$\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) = {\mathbf{p}}^d,$$
+where ${\mathbf{p}}^d$ is defined by . Now let ${\mathbf{p}}^{<em>d}$ be
+the value of ${\mathbf{p}}^d$ where
+$({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D)$ is replaced by
+$({\mathbf{x}}^</em>,\ldots,{\mathbf{x}}^*)$,
+${\mathbf{p}}^{*d} = ({\mathbf{p}}_1^{*d},\ldots,{\mathbf{p}}_n^{*d})$
+where $$\begin{gathered}
+\label{eq:p-star}
+{\mathbf{p}}<em>i^{*d} = \sum</em>{\alpha=d}^D \left( \sum_{i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}} {\mathbf{F}}_{i_1i<em>2\ldots i</em>\alpha} \bigotimes \right. \ \left.{\left{ {\mathbf{x}}^<em>_{i_1},\ldots,{\mathbf{x}}^</em><em>{i</em>{d-1}}, {\mathbf{x}}^<em><em>{i</em>{d+1}},\ldots,{\mathbf{x}}^</em><em>{i</em>\alpha} \right}} \vphantom{\sum_{C=i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha \in{\mathcal{C}}}}\right) \forall i\in{\mathcal{V}}.\end{gathered}$$
+Notice that
+$\frac{\partial F}{\partial {\mathbf{x}}^d}({\mathbf{x}}^<em>,\ldots,{\mathbf{x}}^</em>) = {\mathbf{p}}^{*d}$, 
+becomes
+$$\left({\mathbf{p}}^{<em>d} + {\mathbf{A}}^{d\top}{\mathbf{y}}^</em>\right)^\top({\mathbf{x}}^d-{\mathbf{x}}^*) \ge 0\quad \forall{\mathbf{x}}^d\in{\mathcal{X}}^d,\forall d.$$
+According to  we have ${\mathcal{X}}\subseteq{\mathcal{X}}^d$ and
+therefore the above inequality implies $$\begin{gathered}
+\left({\mathbf{p}}^{<em>d} + {\mathbf{A}}^{d\top}{\mathbf{y}}^</em>\right)^\top({\mathbf{x}}-{\mathbf{x}}^*) \ge 0\quad \forall{\mathbf{x}}\in{\mathcal{X}},\forall d.\end{gathered}$$
+Summing this inequality for all $d$ we get $$\begin{gathered}
+\left(\sum<em>{d=1}^D {\mathbf{p}}^{<em>d}\right)^\top({\mathbf{x}}-{\mathbf{x}}^</em>) \ + {\mathbf{y}}^{*\top}\left(\sum</em>{d=1}^D{\mathbf{A}}^d\right)({\mathbf{x}}-{\mathbf{x}}^<em>) \ge 0 \quad \forall{\mathbf{x}}\in{\mathcal{X}}.\end{gathered}$$
+Yet, according to  we have
+$\sum<em>{d=1}^D{\mathbf{A}}^d{\mathbf{x}}= \sum</em>{d=1}^D{\mathbf{A}}^d{\mathbf{x}}^</em> = \mathbf{0}$.
+Therefore, the second term in the above inequality is $0$, yielding
+$$\left(\sum<em>{d=1}^D {\mathbf{p}}^{<em>d}\right)^\top({\mathbf{x}}-{\mathbf{x}}^</em>) \ge 0 \quad \forall{\mathbf{x}}\in{\mathcal{X}}.$$
+Now if we can prove that $$\label{eq:p-star-sum}
+\sum</em>{d=1}^D {\mathbf{p}}^{<em>d} = \nabla E({\mathbf{x}}^</em>),$$ then we
+have
+$\nabla E({\mathbf{x}}^<em>)^\top({\mathbf{x}}-{\mathbf{x}}^</em>) \ge 0 \ \forall{\mathbf{x}}\in{\mathcal{X}}$
+and thus according to Definition [def:stationary], ${\mathbf{x}}^*$ is
+a stationary point of .</p>
+
+<p>Let us now prove . Indeed, we can rewrite  as $$\begin{gathered}
+\label{eq:p-star-2}
+{\mathbf{p}}<em>i^{*d} = \sum</em>{\alpha=d}^D \left( \sum_{\substack{C\in{\mathcal{C}}\ C = (i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha)}} {\mathbf{F}}<em>{C}\bigotimes {\left{ {\mathbf{x}}^*</em>{j} \right}}<em>{j\in C\setminus i}\right) \ \forall i\in{\mathcal{V}}.\end{gathered}$$
+Therefore, $$\begin{gathered}
+\label{eq:p-star-sum-2}
+\sum</em>{d=1}^D {\mathbf{p}}<em>i^{*d} = \sum</em>{d=1}^D  \sum<em>{\alpha=d}^D \sum</em>{\substack{C\in{\mathcal{C}}\ C = (i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha)}} {\mathbf{F}}<em>{C}\bigotimes {\left{ {\mathbf{x}}^*</em>{j} \right}}<em>{j\in C\setminus i} \ \forall i\in{\mathcal{V}}.\end{gathered}$$
+Let’s take a closer look at this triple sum. The double sum
+$$\sum</em>{\alpha=d}^D \sum_{\substack{C\in{\mathcal{C}}\ C = (i<em>1\ldots i</em>{d-1}ii<em>{d+1}\ldots i</em>\alpha)}}$$
+basically means <em>iterating through all cliques whose sizes are $\ge d$
+and whose $d$^th^ node is $i$</em>. Obviously the condition “sizes $\ge d$”
+is redundant here, thus the above means <em>iterating through all cliques
+whose $d$^th^ node is $i$</em>. Combined with $\sum<em>{d=1}^D$, the above
+triple sum means <em>for each size $d$, iterating through all cliques whose
+$d$^th^ node is $i$</em>, which is clearly equivalent to <em>iterating through
+all cliques that contain $i$</em>. Therefore,  can be rewritten more
+compactly as
+$$\sum</em>{d=1}^D {\mathbf{p}}<em>i^{*d} = \sum</em>{C\in{\mathcal{C}}(i)} {\mathbf{F}}<em>{C}\bigotimes {\left{ {\mathbf{x}}^*</em>{j} \right}}<em>{j\in C\setminus i} \quad \forall i\in{\mathcal{V}},$$
+where ${\mathcal{C}}(i)$ is the set of cliques that contain the node
+$i$. Recall from  that the last expression is actually
+$\frac{\partial E({\mathbf{x}}^*)}{\partial {\mathbf{x}}^i}$,
+$$\sum</em>{d=1}^D {\mathbf{p}}<em>i^{<em>d} = \frac{\partial E({\mathbf{x}}^</em>)}{\partial {\mathbf{x}}^i} \quad \forall i\in{\mathcal{V}},$$
+or equivalently
+$$\sum</em>{d=1}^D {\mathbf{p}}^{<em>d} = \nabla E({\mathbf{x}}^</em>),$$ which
+is , and this completes the proof.</p>
+
+<h1 id="more-details-on-the-implemented-methods-append-methods">More details on the implemented methods {#append:methods}</h1>
+
+<p>We present additional details on PGD, FW, ADMM as well as CQP (we omit
+BCD since it was presented with sufficient details in the paper).</p>
+
+<p>Recall that our nonconvex relaxation is to minimize
+$$\label{eq:mrf-Energy-appendix}
+E({\mathbf{x}}) = \sum<em>{C\in{\mathcal{C}}} {\mathbf{F}}</em>{C} \bigotimes{\left{ {\mathbf{x}}<em>i \right}}</em>{i\in C}\tag{10}$$
+subject to
+${\mathbf{x}}\in{\mathcal{X}}:= {\left{ {\mathbf{x}}\ \Big| \ \mathbf{1}^\top{\mathbf{x}}_i = 1, {\mathbf{x}}_i\ge\mathbf{0}    \ \forall i\in{\mathcal{V}}\right}}.$</p>
+
+<h2 id="pgd-and-fw">PGD and FW</h2>
+
+<p>Recall from Section [sec:gradient-methods] that the main update steps
+in PGD and FW are respectively $$\label{eq:update-pgd}
+{\mathbf{s}}^{(k)}= {\operatornamewithlimits{argmin}}_{{\mathbf{s}}\in{\mathcal{X}}} {\left| {\mathbf{x}}^{(k)} - \beta^{(k)}\nabla E({\mathbf{x}}^{(k)}) - {\mathbf{s}}\right|<em>2}^2,$$
+and $$\label{eq:update-fw}
+{\mathbf{s}}^{(k)}= {\operatornamewithlimits{argmin}}</em>{{\mathbf{s}}\in{\mathcal{X}}} {\mathbf{s}}^\top\nabla E({\mathbf{x}}^{(k)}).$$</p>
+
+<p>Clearly, in the PGD update step  the vector ${\mathbf{s}}^{(k)}$ is the
+projection of
+${\mathbf{x}}^{(k)} - \beta^{(k)}\nabla E({\mathbf{x}}^{(k)})$ onto
+${\mathcal{X}}$. As we have discussed at the end of Section , this
+projection is reduced to independent projections onto the simplex
+${\left{ {\mathbf{x}}_i \ | \ \mathbf{1}^\top{\mathbf{x}}_i = 1, {\mathbf{x}}_i\ge\mathbf{0} \right}}$
+for each node $i$. In our implementation we used the method introduced
+in [@condat2016fast] for this simplex projection task.</p>
+
+<p>The FW update step  can be solved independently for each node as well:
+$${\mathbf{s}}<em>i^{(k)}= {\operatornamewithlimits{argmin}}</em>{\mathbf{1}^\top{\mathbf{s}}_i = 1, {\mathbf{s}}_i\ge\mathbf{0}} {\mathbf{s}}_i^\top\frac{\partial E({\mathbf{x}}^{(k)})}{\partial {\mathbf{x}}_i}\quad\forall i\in{\mathcal{V}},$$
+which is similar to the BCD update step  and thus can be solved using
+Lemma [lem:bcd].</p>
+
+<p>Next, we describe the line-search procedure  for these methods. Before
+going into details, we should note that in addition to line-search, we
+also implemented other step-size update rules such as <em>diminishing</em> or
+<em>Armijo</em> ones. However, we found that these rules do not work as well as
+line-search (the diminishing rule converges slowly while the search in
+the Armijo rule is expensive). We refer to <a href="Chapter 2" target="_blank">@bertsekas1999nonlinear</a> for further details on these rules.</p>
+
+<h4 id="line-search">Line search</h4>
+
+<p>The line-search step consists of finding
+$$\label{eq:line-search-appendix}
+\alpha^{(k)} = {\operatornamewithlimits{argmin}}_{0\le \alpha\le 1}E\left({\mathbf{x}}^{(k)} + \alpha{\mathbf{r}}^{(k)}\right),$$
+where ${\mathbf{r}}^{(k)} = {\mathbf{s}}^{(k)} - {\mathbf{x}}^{(k)}$.
+The term $E\left({\mathbf{x}}^{(k)} + \alpha{\mathbf{r}}^{(k)}\right)$
+is clearly a $D$^th^-degree polynomial of $\alpha$ (recall that $D$ is
+the degree of the MRF), which we denote $p(\alpha)$. If we can determine
+the coefficients of $p(\alpha)$, then  can be solved efficiently. In
+particular, if $D \le 3$ then  has simple closed-form solutions (since
+the derivative of a $3$^rd^-order polynomial is a $2$^nd^-order one,
+which has simple closed-form solutions). For $D &gt; 3$ we find that it is
+efficient enough to perform an exhaustive search over the interval
+$[0,1]$ (with some increment value $\delta$) for the best value of
+$\alpha$. In the implementation we used $\delta = 0.0001$.</p>
+
+<p>Now let us describe how to find the coefficients of $p(\alpha)$.</p>
+
+<p>For pairwise MRFs ($D=2$), the energy is $$\label{eq:energy-pairwise}
+    E<em>{\mathrm{pairwise}}({\mathbf{x}}) = \sum</em>{i\in {\mathcal{V}}} {\mathbf{F}}_i^\top {\mathbf{x}}<em>i + \sum</em>{ij\in{\mathcal{E}}} {\mathbf{x}}<em>i^\top{\mathbf{F}}</em>{ij}{\mathbf{x}}<em>j,$$
+where ${\mathcal{E}}$ is the set of edges, and thus $$\begin{aligned}
+    &amp;p(\alpha) = E</em>{\mathrm{pairwise}}({\mathbf{x}}+ \alpha{\mathbf{r}}) <br />
+    = &amp;\sum_{i\in {\mathcal{V}}} {\mathbf{F}}_i^\top ({\mathbf{x}}_i + \alpha{\mathbf{r}}<em>i) + \sum</em>{ij\in{\mathcal{E}}} ({\mathbf{x}}_i + \alpha{\mathbf{r}}<em>i)^\top{\mathbf{F}}</em>{ij}({\mathbf{x}}_j + \alpha{\mathbf{r}}<em>j)<br />
+    = &amp;A\alpha^2 + B\alpha + C,\end{aligned}$$ where $$\begin{aligned}
+A &amp;= \sum</em>{ij\in{\mathcal{E}}} {\mathbf{r}}<em>i^\top{\mathbf{F}}</em>{ij}{\mathbf{r}}<em>j <br />
+B &amp;= \sum</em>{i\in {\mathcal{V}}} {\mathbf{F}}_i^\top {\mathbf{r}}<em>i + \sum</em>{ij\in{\mathcal{E}}}\left( {\mathbf{x}}<em>i^\top{\mathbf{F}}</em>{ij}{\mathbf{r}}_j + {\mathbf{r}}<em>i^\top{\mathbf{F}}</em>{ij}{\mathbf{x}}<em>j\right)<br />
+C &amp;= E</em>{\mathrm{pairwise}}({\mathbf{x}}).\end{aligned}$$</p>
+
+<p>For higher-order MRFs, the analytical expressions of the polynomial
+coefficients are very complicated. Instead, we can find them numerically
+as follows. Since $p(\alpha)$ is a $D$^th^-degree polynomial, it has
+$D+1$ coefficients, where the constant coefficient is already known:
+$$p(0) = E({\mathbf{x}}^{(k)}).$$ It remains $D$ unknown coefficients,
+which can be computed if we have $D$ equations. Indeed, if we evaluate
+$p(\alpha)$ at $D$ different random values of $\alpha$ (which must be
+different than $0$), then we obtain $D$ linear equations whose variables
+are the coefficients of $p(\alpha)$. Solving this system of linear
+equations we get the values of these coefficients. This procedure
+requires $D$ evaluations of the energy
+$E\left({\mathbf{x}}^{(k)} + \alpha{\mathbf{r}}^{(k)}\right)$, but we
+find that it is efficient enough in practice.</p>
+
+<h2 id="convex-qp-relaxation">Convex QP relaxation</h2>
+
+<p>This relaxation was presented in [@ravikumar2006quadratic] for pairwise
+MRFs . Define:
+$$d<em>i(s) = \sum</em>{j\in{\mathcal{N}}(i)}\sum_{t\in{\mathcal{S}}<em>j} \frac{1}{2}{\left| f</em>{ij}(s,t) \right|}.$$
+Denote ${\mathbf{d}}_i = (d<em>i(s))</em>{s\in{\mathcal{S}}_i}$ and
+${\mathbf{D}}_i = {\mathrm{diag}}({\mathbf{d}}_i)$, the diagonal matrix
+composed by ${\mathbf{d}}<em>i$. The convex QP relaxation energy is given
+by $$\begin{aligned}
+E</em>\text{cqp}({\mathbf{x}}) &amp;= E<em>{\mathrm{pairwise}}({\mathbf{x}}) -\sum</em>{i\in {\mathcal{V}}} {\mathbf{d}}_i^\top {\mathbf{x}}<em>i + \sum</em>{i\in {\mathcal{V}}} {\mathbf{x}}_i^\top {\mathbf{D}}_i {\mathbf{x}}_i.\end{aligned}$$
+This convex energy can be minimized using different methods. Here we
+propose to solve it using Frank-Wolfe algorithm, which has the guarantee
+to reach the global optimum.</p>
+
+<p>Similarly to the previous nonconvex Frank-Wolfe algorithm, the update
+step  can be solved using Lemma [lem:bcd], and the line-search has
+closed-form solutions: $$\begin{aligned}
+E<em>\text{cqp}({\mathbf{x}}+ \alpha{\mathbf{r}}) = &amp;E</em>{\mathrm{pairwise}}({\mathbf{x}}+ \alpha{\mathbf{r}}) - \sum_{i\in {\mathcal{V}}} {\mathbf{d}}_i^\top ({\mathbf{x}}_i + \alpha{\mathbf{r}}<em>i)\notag <br />
+&amp;+ \sum</em>{i\in {\mathcal{V}}} ({\mathbf{x}}_i + \alpha{\mathbf{r}}_i)^\top {\mathbf{D}}_i ({\mathbf{x}}_i + \alpha{\mathbf{r}}<em>i) <br />
+= &amp;A&rsquo;\alpha^2 + B&rsquo;\alpha + C&rsquo;,\end{aligned}$$ where $$\begin{aligned}
+A&rsquo; &amp;= A + \sum</em>{i\in{\mathcal{V}}} {\mathbf{r}}_i^\top{\mathbf{D}}_i{\mathbf{r}}<em>i <br />
+B&rsquo; &amp;= B + \sum</em>{i\in{\mathcal{V}}}\left(-{\mathbf{d}}_i^\top{\mathbf{r}}_i + {\mathbf{r}}_i^\top{\mathbf{D}}_i{\mathbf{x}}_i + {\mathbf{x}}_i^\top{\mathbf{D}}_i{\mathbf{r}}<em>i\right)<br />
+C&rsquo; &amp;= C + \sum</em>{i\in{\mathcal{V}}}\left(-{\mathbf{d}}_i^\top{\mathbf{x}}_i + {\mathbf{x}}_i^\top{\mathbf{D}}_i{\mathbf{x}}_i\right).\end{aligned}$$</p>
+
+<h2 id="admm-append-admm">ADMM {#append:admm}</h2>
+
+<p>In this section, we give more details on the instantiation of ADMM into
+different decompositions. As we have seen in Section [sec:admm], there
+is an infinite number of such decompositions. Some examples include:
+$$\begin{aligned}
+{3}
+&amp;\text{(cyclic)}&amp;&amp;{\mathbf{x}}^{d-1}  &amp;&amp;={\mathbf{x}}^d, \quad d = 2,\ldots, D,\label{eq:cyclic-append}<br />
+&amp;\text{(star)}&amp;&amp;{\mathbf{x}}^1        &amp;&amp;={\mathbf{x}}^d,\quad d = 2,\ldots, D,\label{eq:star-append}<br />
+&amp;\text{(symmetric)}\quad&amp;&amp;{\mathbf{x}}^d      &amp;&amp;=({\mathbf{x}}^1+\cdots+{\mathbf{x}}^D)/D\quad \forall d.\label{eq:symmetric-append}\end{aligned}$$
+Let us consider for example the <em>cyclic</em> decomposition. We obtain the
+following problem, equivalent to : $$\label{prob:mrf-decomposed-cyclic}
+\begin{aligned}
+\mbox{min}\quad &amp; F({\mathbf{x}}^1,{\mathbf{x}}^2,\ldots,{\mathbf{x}}^D)\
+\mbox{s.t.}\quad &amp; {\mathbf{x}}^{d-1} = {\mathbf{x}}^d,\quad d=2,\ldots,D,<br />
+&amp;{\mathbf{x}}^d\in{\mathcal{X}}^d, \qquad d=1,\ldots,D,
+\end{aligned}$$ where ${\mathcal{X}}^1,\ldots,{\mathcal{X}}^D$ are
+closed convex sets satisfying
+${\mathcal{X}}^1\cap{\mathcal{X}}^2\cap\cdots\cap{\mathcal{X}}^D = {\mathcal{X}}$,
+and $F$ is defined by .</p>
+
+<p>The augmented Lagrangian of this problem is: $$\begin{gathered}
+\label{eq:lagrangian-cyclic}
+    L<em>\rho({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D,{\mathbf{y}}) = F({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D) \ + \sum</em>{d=2}^D {\left\langle {\mathbf{y}}^d,{\mathbf{x}}^{d-1} - {\mathbf{x}}^d \right\rangle} + \frac{\rho}{2}\sum_{d=2}^D{\left| {\mathbf{x}}^{d-1} - {\mathbf{x}}^d \right|<em>2}^2,\end{gathered}$$
+where ${\mathbf{y}}=({\mathbf{y}}^2,\ldots,{\mathbf{y}}^D)$. The
+${\mathbf{y}}$ update  becomes $$\label{eq:update-y-cyclic}
+        {\mathbf{y}}^{d^{(k+1)}} = {\mathbf{y}}^{d^{(k)}} + \rho\left({\mathbf{x}}^{d-1^{(k+1)}} - {\mathbf{x}}^{d^{(k+1)}}\right).$$
+Consider the ${\mathbf{x}}$ update . Plugging  into , expanding and
+regrouping, we obtain that
+$L</em>\rho({\mathbf{x}}^1,\ldots,{\mathbf{x}}^D,{\mathbf{y}})$ is equal to
+each of the following expressions: $$\begin{aligned}
+&amp;\frac{\rho}{2}{\left| {\mathbf{x}}^1 \right|_2}^2 - {\left\langle {\mathbf{x}}^1, \rho{\mathbf{x}}^2-{\mathbf{y}}^2-{\mathbf{p}}^1 \right\rangle} + \mathrm{cst}({\mathbf{x}}^1),<br />
+&amp;\rho{\left| {\mathbf{x}}^d \right|_2}^2 - {\left\langle {\mathbf{x}}^d,\rho{\mathbf{x}}^{d-1} + \rho{\mathbf{x}}^{d+1} + {\mathbf{y}}^d - {\mathbf{y}}^{d+1} -{\mathbf{p}}^d  \right\rangle} \notag\
+&amp;\qquad\qquad\qquad + \mathrm{cst}({\mathbf{x}}^d) \qquad(2\le d\le D-1),<br />
+&amp;\frac{\rho}{2}{\left| {\mathbf{x}}^D \right|_2}^2 - {\left\langle {\mathbf{x}}^D, \rho{\mathbf{x}}^{D-1}+{\mathbf{y}}^D-{\mathbf{p}}^D \right\rangle} + \mathrm{cst}({\mathbf{x}}^D).\end{aligned}$$
+From this, it is straightforward to see that the ${\mathbf{x}}$ update 
+is reduced to  where $({\mathbf{c}}<em>d)</em>{1\le d \le D}$ are defined by , 
+and .</p>
+
+<p>It is straightforward to obtain similar results for the other
+decompositions.</p>
+
+<p>[0.18]{} <img src="cones_disp2" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_afusion" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_ogm_trbp05" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_addd" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_ogm_ddh_bundel_a" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p></p>
+
+<p>[0.18]{} <img src="cones_small_srmp" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_bcd0" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_fw0" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_pgd0" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<p> </p>
+
+<p>[0.18]{} <img src="cones_small_admm0" alt="image" />{width=&rdquo;\linewidth&rdquo;}</p>
+
+<h1 id="details-on-the-experiments-append-experiments">Details on the experiments {#append:experiments}</h1>
+
+<p>We replicated the model presented in [@woodford2009global] for the
+second-order stereo experiment, with some simplifications: we only used
+segmentation proposals (denoted by <em>SegPln</em> in [@woodford2009global])
+and omitted the binary visibility variables and edges, so that all the
+nodes have the same number of labels. We ran the code provided
+by [@woodford2009global] to get the unary potentials as well as the 14
+proposals, and then built the MRF model using OpenGM [@opengm-library].
+An example of resulted disparity maps for the <em>cones</em> scene of the
+Middlebury stereo dataset [@scharstein2003high] is given in
+Figure [fig:stereo-full].</p>
+
+<p>For further details on the other modes, we refer to [@kappes2015ijcv].</p>
+
+<p>The detailed results of the experiments are provided at the end of this
+document.</p>
+
+<hr />
+
+<p><strong>inpainting-n4</strong>                               CQP                                                                        ADMM   BCD   FW   PGD</p>
+
+<hr />
+
+<p><strong>inpainting-n4</strong>                               CQP                                                                        ADMM   BCD   FW   PGD</p>
+
+<p>triplepoint4-plain-ring-inverse   value     2256.45                                           **424.12&amp; 443.18&amp; 443.18&amp; 444.75\<br />
+                                                                                           &amp; bound&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                                         &amp; runtime&amp; 2.60&amp; 7.69&amp; 0.11&amp; 1.05&amp; 0.77\<br />
+                                                        triplepoint4-plain-ring&amp; value&amp; 542.57&amp; **484.59&amp; 528.57&amp; 533.29&amp; 534.86\<br />
+                                                                                           &amp; bound&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                                        &amp; runtime&amp; 1.24&amp; 12.00&amp; 0.11&amp; 1.15&amp; 0.85\<br />
+                                                                      <strong>mean energy</strong> &amp; &amp; 490.09&amp; 454.35&amp; 485.88&amp; 488.23&amp; 489.80\<br />
+                                                                                 <strong>mean bound</strong> &amp; &amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                               <strong>mean runtime</strong> &amp; &amp; 1.92&amp; 9.84&amp; 0.11&amp; 1.10&amp; 0.81\<br />
+                                                                               <strong>best value</strong> &amp; &amp; 0.00&amp; 100.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                 <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                               <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                             ****</p>
+
+<hr />
+
+<p>: inpainting-n4</p>
+
+<hr />
+
+<p><strong>inpainting-n8</strong>                           $\alpha$-Exp   FastPD     TRBP     ADDD     MPLP   MPLP-C                                                                                                        BUNDLE     TRWS</p>
+
+<hr />
+
+<p><strong>inpainting-n8</strong>                           $\alpha$-Exp   FastPD     TRBP     ADDD     MPLP   MPLP-C                                                                                                        BUNDLE     TRWS</p>
+
+<p>triplepoint4-plain-ring-inverse   value           434.84   434.84   496.40   714.42   442.42   463.88                                                                                                        435.32   504.97</p>
+
+<pre><code>                                bound             -Inf     0.00     -Inf   406.71   412.37   413.49                                                                                             **415.83&amp; 413.20\ 
+                                                                                                                                            &amp; runtime&amp; 0.90&amp; 0.19&amp; 97.95&amp; 57.01&amp; 1107.98&amp; 3660.44&amp; 112.91&amp; 16.09\ 
+                                                                                                      triplepoint4-plain-ring&amp; value&amp; **495.20&amp; **495.20&amp; **495.20&amp; 495.85&amp; 495.52&amp; **495.20&amp; **495.20&amp; **495.20\ 
+                                                                                                                                           &amp; bound&amp; -Inf&amp; 272.56&amp; -Inf&amp; 495.18&amp; 494.72&amp; **495.20&amp; 495.04&amp; 494.71\ 
+                                                                                                                                              &amp; runtime&amp; 0.67&amp; 0.11&amp; 30.04&amp; 14.56&amp; 581.96&amp; 884.34&amp; 110.56&amp; 16.37\ 
+                                                                                                                              **mean energy** &amp; &amp; 465.02&amp; 465.02&amp; 494.02&amp; 605.14&amp; 468.83&amp; 469.78&amp; 465.26&amp; 466.80\ 
+                                                                                                                                   **mean bound** &amp; &amp; -Inf&amp; 136.28&amp; -Inf&amp; 450.95&amp; 453.55&amp; 454.35&amp; 455.43&amp; 453.96\ 
+                                                                                                                                   **mean runtime** &amp; &amp; 0.78&amp; 0.15&amp; 64.00&amp; 35.78&amp; 844.97&amp; 2272.39&amp; 111.74&amp; 16.23\ 
+                                                                                                                                         **best value** &amp; &amp; 50.00&amp; 50.00&amp; 50.00&amp; 0.00&amp; 0.00&amp; 50.00&amp; 50.00&amp; 50.00\ 
+                                                                                                                                             **best bound** &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 50.00&amp; 50.00&amp; 0.00\ 
+                                                                                                                                             **verified opt** &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\ 
+                                                                                                                                                                                                 **************** 
+</code></pre>
+
+<hr />
+
+<p>: inpainting-n8</p>
+
+<hr />
+
+<p><strong>inpainting-n8</strong>                               CQP                                                                        ADMM   BCD   FW   PGD</p>
+
+<hr />
+
+<p><strong>inpainting-n8</strong>                               CQP                                                                        ADMM   BCD   FW   PGD</p>
+
+<p>triplepoint4-plain-ring-inverse   value     1819.57                                           **434.32&amp; 438.95&amp; 446.19&amp; 446.19\<br />
+                                                                                           &amp; bound&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                                       &amp; runtime&amp; 20.78&amp; 38.71&amp; 0.31&amp; 6.33&amp; 6.55\<br />
+                                                        triplepoint4-plain-ring&amp; value&amp; 538.25&amp; **495.20&amp; 524.94&amp; 533.45&amp; 533.45\<br />
+                                                                                           &amp; bound&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                                        &amp; runtime&amp; 2.46&amp; 42.57&amp; 0.28&amp; 5.55&amp; 3.83\<br />
+                                                                      <strong>mean energy</strong> &amp; &amp; 489.82&amp; 464.76&amp; 481.95&amp; 489.82&amp; 489.82\<br />
+                                                                                 <strong>mean bound</strong> &amp; &amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf&amp; -Inf\<br />
+                                                                             <strong>mean runtime</strong> &amp; &amp; 11.62&amp; 40.64&amp; 0.29&amp; 5.94&amp; 5.19\<br />
+                                                                               <strong>best value</strong> &amp; &amp; 0.00&amp; 100.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                 <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                               <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                             ****</p>
+
+<hr />
+
+<p>: inpainting-n8</p>
+
+<hr />
+
+<p><strong>matching</strong>                       TRBP              ADDD             MPLP                                                                                                                MPLP-C   BUNDLE   TRWS   CQP   ADMM</p>
+
+<hr />
+
+<p><strong>matching</strong>                       TRBP              ADDD             MPLP                                                                                                                MPLP-C   BUNDLE   TRWS   CQP   ADMM</p>
+
+<p>matching0      value     60000000075.71   200000000047.27   90000000059.69                                                                                 **19.36&amp; 58.64&amp; 61.05&amp; 118.90&amp; 42.09\<br />
+                                                                                                                                   &amp; bound&amp; -Inf&amp; 11.56&amp; 10.96&amp; **19.36&amp; 11.27&amp; 11.02&amp; -Inf&amp; -Inf\<br />
+                                                                                                                                        &amp; runtime&amp; 0.00&amp; 2.45&amp; 0.22&amp; 8.02&amp; 1.09&amp; 0.04&amp; 0.06&amp; 0.02\<br />
+                                                                               matching1&amp; value&amp; 170000000090.50&amp; 70000000031.36&amp; 50000000030.34&amp; **23.58&amp; 10000000021.89&amp; 102.20&amp; 138.99&amp; 107.31\<br />
+                                                                                                                                   &amp; bound&amp; -Inf&amp; 20.13&amp; 18.47&amp; **23.58&amp; 17.48&amp; 18.52&amp; -Inf&amp; -Inf\<br />
+                                                                                                                                        &amp; runtime&amp; 0.00&amp; 3.82&amp; 0.52&amp; 4.52&amp; 2.70&amp; 0.04&amp; 0.10&amp; 0.94\<br />
+                                                                                matching2&amp; value&amp; 110000000096.00&amp; 20000000026.59&amp; 30000000025.18&amp; **26.08&amp; 20000000043.93&amp; 51.59&amp; 156.46&amp; 107.41\<br />
+                                                                                                                                   &amp; bound&amp; -Inf&amp; 22.97&amp; 21.07&amp; **26.08&amp; 19.87&amp; 21.18&amp; -Inf&amp; -Inf\<br />
+                                                                                                                                        &amp; runtime&amp; 0.00&amp; 4.12&amp; 0.94&amp; 8.25&amp; 3.56&amp; 0.12&amp; 0.08&amp; 0.26\<br />
+                                                                                  matching3&amp; value&amp; 80000000066.03&amp; 130000000051.70&amp; 90000000051.81&amp; **15.86&amp; 10000000042.82&amp; 41.92&amp; 93.67&amp; 43.69\<br />
+                                                                                                                                    &amp; bound&amp; -Inf&amp; 10.72&amp; 10.15&amp; **15.86&amp; 9.25&amp; 10.14&amp; -Inf&amp; -Inf\<br />
+                                                                                                                                        &amp; runtime&amp; 0.00&amp; 2.25&amp; 0.21&amp; 3.36&amp; 1.96&amp; 0.01&amp; 0.07&amp; 0.02\<br />
+                                                                                 <strong>mean energy</strong> &amp; &amp; 97500000064.52&amp; 105000000039.23&amp; 65000000041.76&amp; 21.22&amp; 10000000041.82&amp; 63.52&amp; 127.01&amp; 75.12\<br />
+                                                                                                                           <strong>mean bound</strong> &amp; &amp; -Inf&amp; 16.35&amp; 15.16&amp; 21.22&amp; 14.47&amp; 15.22&amp; -Inf&amp; -Inf\<br />
+                                                                                                                              <strong>mean runtime</strong> &amp; &amp; 0.00&amp; 3.16&amp; 0.47&amp; 6.04&amp; 2.33&amp; 0.05&amp; 0.08&amp; 0.31\<br />
+                                                                                                                              <strong>best value</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                              <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                            <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                                                                                  ****************</p>
+
+<hr />
+
+<p>: matching</p>
+
+<p><strong>matching</strong>                      BCD      FW     PGD</p>
+
+<hr />
+
+<p><strong>matching</strong>                      BCD      FW     PGD
+  matching0          value        43.61   56.10   49.45
+                     bound         -Inf    -Inf    -Inf
+                     runtime       0.00    0.19    8.08
+  matching1          value       118.00   77.31   79.01
+                     bound         -Inf    -Inf    -Inf
+                     runtime       0.00   23.66   21.36
+  matching2          value       139.74   89.46   62.40
+                     bound         -Inf    -Inf    -Inf
+                     runtime       0.00   55.74   19.28
+  matching3          value        38.09   43.98   43.21
+                     bound         -Inf    -Inf    -Inf
+                     runtime       0.00    0.81    4.11
+  <strong>mean energy</strong>                 84.86   66.71   58.52
+  <strong>mean bound</strong>                   -Inf    -Inf    -Inf
+  <strong>mean runtime</strong>                 0.00   20.10   13.21
+  <strong>best value</strong>                   0.00    0.00    0.00
+  <strong>best bound</strong>                   0.00    0.00    0.00
+  <strong>verified opt</strong>                 0.00    0.00    0.00</p>
+
+<p>: matching</p>
+
+<hr />
+
+<p><strong>mrf-stereo</strong>                 FastPD                                                                                               $\alpha$-Exp   TRBP   ADDD   MPLP   MPLP-C   TRWS   BUNDLE</p>
+
+<hr />
+
+<p><strong>mrf-stereo</strong>                 FastPD                                                                                               $\alpha$-Exp   TRBP   ADDD   MPLP   MPLP-C   TRWS   BUNDLE</p>
+
+<p>ted-gm           value     1344017.00                                           **1343176.00&amp; 1460166.00&amp; NaN&amp; NaN&amp; NaN&amp; 1346202.00&amp; 1563172.00\<br />
+                                                                          &amp; bound&amp; 395613.00&amp; -Inf&amp; -Inf&amp; NaN&amp; NaN&amp; NaN&amp; **1337092.22&amp; 1334223.01\<br />
+                                                                                 &amp; runtime&amp; 14.94&amp; 29.75&amp; 3616.74&amp; NaN&amp; NaN&amp; NaN&amp; 391.34&amp; 3530.00\<br />
+                                          tsu-gm&amp; value&amp; 370825.00&amp; 370255.00&amp; 411157.00&amp; 455874.00&amp; 369304.00&amp; 369865.00&amp; 369279.00&amp; **369218.00\<br />
+                                                           &amp; bound&amp; 31900.00&amp; -Inf&amp; -Inf&amp; 299780.16&amp; 367001.47&amp; 366988.29&amp; 369217.58&amp; **369218.00\<br />
+                                                                        &amp; runtime&amp; 1.72&amp; 3.64&amp; 1985.50&amp; 1066.79&amp; 4781.02&amp; 4212.26&amp; 393.76&amp; 670.81\<br />
+                                                       ven-gm&amp; value&amp; 3127923.00&amp; 3138157.00&amp; 3122190.00&amp; NaN&amp; NaN&amp; NaN&amp; **3048404.00&amp; 3061733.00\<br />
+                                                                          &amp; bound&amp; 475665.00&amp; -Inf&amp; -Inf&amp; NaN&amp; NaN&amp; NaN&amp; **3047929.95&amp; 3047785.37\<br />
+                                                                                  &amp; runtime&amp; 4.76&amp; 10.87&amp; 2030.13&amp; NaN&amp; NaN&amp; NaN&amp; 478.49&amp; 1917.58\<br />
+                                                    <strong>mean energy</strong> &amp; &amp; 1614255.00&amp; 1617196.00&amp; 1664504.33&amp; NaN&amp; NaN&amp; NaN&amp; 1587596.67&amp; 1664707.67\<br />
+                                                                  <strong>mean bound</strong> &amp; &amp; 301059.33&amp; -Inf&amp; -Inf&amp; NaN&amp; NaN&amp; NaN&amp; 1584746.58&amp; 1583742.13\<br />
+                                                                        <strong>mean runtime</strong> &amp; &amp; 7.14&amp; 14.75&amp; 2544.12&amp; NaN&amp; NaN&amp; NaN&amp; 421.20&amp; 2039.47\<br />
+                                                                             <strong>best value</strong> &amp; &amp; 0.00&amp; 33.33&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 33.33&amp; 33.33\<br />
+                                                                              <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 66.67&amp; 33.33\<br />
+                                                                              <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\<br />
+                                                                                                                                      ************</p>
+
+<hr />
+
+<p>: mrf-stereo</p>
+
+<p><strong>mrf-stereo</strong>                         CQP         ADMM           BCD            FW           PGD</p>
+
+<hr />
+
+<p><strong>mrf-stereo</strong>                         CQP         ADMM           BCD            FW           PGD
+  ted-gm             value        4195611.00   1373030.00    3436281.00    3020579.00    2694493.00
+                     bound              -Inf         -Inf          -Inf          -Inf          -Inf
+                     runtime         3602.97      3628.80         15.64       1740.10       2109.65
+  tsu-gm             value        3621062.00    375954.00    2722934.00    2352499.00    2114223.00
+                     bound              -Inf         -Inf          -Inf          -Inf          -Inf
+                     runtime         3600.79       807.70          5.33        622.64        120.38
+  ven-gm             value       26408665.00   3123334.00   14907352.00   13114176.00   10818561.00
+                     bound              -Inf         -Inf          -Inf          -Inf          -Inf
+                     runtime         3602.28      2696.49         11.48       3604.63       2298.42
+  <strong>mean energy</strong>                11408446.00   1624106.00    7022189.00    6162418.00    5209092.33
+  <strong>mean bound</strong>                        -Inf         -Inf          -Inf          -Inf          -Inf
+  <strong>mean runtime</strong>                   3602.01      2377.66         10.82       1989.12       1509.49
+  <strong>best value</strong>                        0.00         0.00          0.00          0.00          0.00
+  <strong>best bound</strong>                        0.00         0.00          0.00          0.00          0.00
+  <strong>verified opt</strong>                      0.00         0.00          0.00          0.00          0.00</p>
+
+<p>: mrf-stereo</p>
+
+<hr />
+
+<p><strong>inclusion</strong>                $\alpha$-Fusion      TRBP      ADDD      MPLP    MPLP-C    BUNDLE                                                                                                         SRMP   ADMM</p>
+
+<hr />
+
+<p><strong>inclusion</strong>                $\alpha$-Fusion      TRBP      ADDD      MPLP    MPLP-C    BUNDLE                                                                                                         SRMP   ADMM</p>
+
+<p>modelH-1-0.8-0.2   value             1595.06   1416.07   2416.58   3416.08   5415.89   5427.91                                                                                        **1415.94&amp; **1415.94\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1415.71&amp; 1415.70&amp; 1415.71&amp; 1406.09&amp; **1415.94&amp; -Inf\
+                                                                                                                                          &amp; runtime&amp; 0.06&amp; 21.93&amp; 10.52&amp; 12.17&amp; 3843.79&amp; 99.77&amp; 0.11&amp; 106.70\
+                                                                                                          modelH-10-0.8-0.2&amp; value&amp; 1590.97&amp; 1416.80&amp; 3415.92&amp; 5415.13&amp; 4415.43&amp; 5422.47&amp; **1416.10&amp; 1416.24\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1415.68&amp; 1415.62&amp; 1415.70&amp; 1404.47&amp; **1416.10&amp; -Inf\
+                                                                                                                                            &amp; runtime&amp; 0.05&amp; 22.66&amp; 1.20&amp; 12.03&amp; 3797.40&amp; 91.16&amp; 0.13&amp; 85.46\
+                                                                                                         modelH-2-0.8-0.2&amp; value&amp; 1603.85&amp; 1423.42&amp; 4423.49&amp; 6422.84&amp; 3423.03&amp; 5436.16&amp; **1422.89&amp; **1422.89\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1422.79&amp; 1422.78&amp; 1422.79&amp; 1411.56&amp; **1422.89&amp; -Inf\
+                                                                                                                                          &amp; runtime&amp; 0.05&amp; 21.34&amp; 10.00&amp; 6.67&amp; 4051.20&amp; 101.83&amp; 0.11&amp; 113.24\
+                                                                                                   modelH-3-0.8-0.2&amp; value&amp; 1596.11&amp; **1381.14&amp; **1381.14&amp; **1381.14&amp; **1381.14&amp; 4389.78&amp; **1381.14&amp; 1381.19\
+                                                                                                                                  &amp; bound&amp; -Inf&amp; -Inf&amp; **1381.14&amp; 1381.14&amp; 1381.14&amp; 1371.29&amp; **1381.14&amp; -Inf\
+                                                                                                                                                &amp; runtime&amp; 0.06&amp; 8.02&amp; 4.50&amp; 7.79&amp; 8.84&amp; 112.52&amp; 0.11&amp; 63.51\
+                                                                                                         modelH-4-0.8-0.2&amp; value&amp; 1595.12&amp; 1427.56&amp; 5427.63&amp; 5426.48&amp; 3427.27&amp; 2432.97&amp; **1427.17&amp; **1427.17\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1426.58&amp; 1426.56&amp; 1426.58&amp; 1416.80&amp; **1427.17&amp; -Inf\
+                                                                                                                                           &amp; runtime&amp; 0.04&amp; 21.18&amp; 9.40&amp; 8.29&amp; 3892.65&amp; 116.38&amp; 0.13&amp; 125.01\
+                                                                                                           modelH-5-0.8-0.2&amp; value&amp; 1566.58&amp; 3383.89&amp; 6383.61&amp; 4383.52&amp; 6382.77&amp; 4390.47&amp; **1383.69&amp; 1383.77\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1383.25&amp; 1383.23&amp; 1383.30&amp; 1371.94&amp; **1383.69&amp; -Inf\
+                                                                                                                                            &amp; runtime&amp; 0.04&amp; 21.05&amp; 8.45&amp; 5.44&amp; 3902.54&amp; 112.86&amp; 0.18&amp; 99.08\
+                                                                                                           modelH-6-0.8-0.2&amp; value&amp; 1588.33&amp; 2402.30&amp; 2402.17&amp; 2402.60&amp; 5401.70&amp; 3406.27&amp; **1402.34&amp; 1402.60\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1402.01&amp; 1401.77&amp; 1402.01&amp; 1393.05&amp; **1402.34&amp; -Inf\
+                                                                                                                                          &amp; runtime&amp; 0.03&amp; 20.80&amp; 2.69&amp; 22.61&amp; 3778.21&amp; 101.74&amp; 0.11&amp; 126.40\
+                                                                                                           modelH-7-0.8-0.2&amp; value&amp; 1583.36&amp; 1403.61&amp; 3403.70&amp; 5402.97&amp; 5403.24&amp; 6418.08&amp; **1403.25&amp; 1403.69\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1403.08&amp; 1403.07&amp; 1403.08&amp; 1391.87&amp; **1403.25&amp; -Inf\
+                                                                                                                                           &amp; runtime&amp; 0.04&amp; 20.80&amp; 2.50&amp; 11.98&amp; 4124.95&amp; 103.95&amp; 0.15&amp; 94.36\
+                                                                                                       modelH-8-0.8-0.2&amp; value&amp; 1574.64&amp; 3368.65&amp; 3368.65&amp; 3368.66&amp; 1368.55&amp; **1368.33&amp; **1368.33&amp; **1368.33\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1368.29&amp; 1368.29&amp; 1368.33&amp; 1368.23&amp; **1368.33&amp; -Inf\
+                                                                                                                                            &amp; runtime&amp; 0.05&amp; 20.66&amp; 11.21&amp; 5.09&amp; 3740.80&amp; 92.39&amp; 0.15&amp; 86.69\
+                                                                                                         modelH-9-0.8-0.2&amp; value&amp; 1577.25&amp; 1385.00&amp; 1385.23&amp; 2385.04&amp; 3385.06&amp; **1384.86&amp; **1384.86&amp; 1384.95\
+                                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 1384.82&amp; 1384.82&amp; 1384.82&amp; 1384.81&amp; **1384.86&amp; -Inf\
+                                                                                                                                              &amp; runtime&amp; 0.03&amp; 3.61&amp; 3.15&amp; 4.75&amp; 3824.62&amp; 82.98&amp; 0.11&amp; 73.29\
+                                                                                                                  <strong>mean energy</strong> &amp; &amp; 1587.13&amp; 1441.43&amp; 1694.72&amp; 3300.67&amp; 2800.54&amp; 4007.73&amp; 1400.57&amp; 1400.68\
+                                                                                                                            <strong>mean bound</strong> &amp; &amp; -Inf&amp; -Inf&amp; 1400.33&amp; 1400.30&amp; 1400.35&amp; 1392.01&amp; 1400.57&amp; -Inf\
+                                                                                                                                  <strong>mean runtime</strong> &amp; &amp; 0.05&amp; 18.20&amp; 6.36&amp; 9.68&amp; 3496.50&amp; 101.56&amp; 0.13&amp; 97.37\
+                                                                                                                                   <strong>best value</strong> &amp; &amp; 0.00&amp; 10.00&amp; 10.00&amp; 10.00&amp; 10.00&amp; 20.00&amp; 100.00&amp; 40.00\
+                                                                                                                                        <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 10.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00\
+                                                                                                                                      <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 10.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00\
+                                                                                                                                               **************************************************************</p>
+
+<hr />
+
+<p>: inclusion</p>
+
+<p><strong>inclusion</strong>                        BCD         FW        PGD</p>
+
+<hr />
+
+<p><strong>inclusion</strong>                        BCD         FW        PGD
+  modelH-1-0.8-0.2    value       12435.37    7419.38    7421.24
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      44.22      67.47
+  modelH-10-0.8-0.2   value       15446.57    7427.81    5424.26
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14       2.76      16.90
+  modelH-2-0.8-0.2    value       10430.00    5425.92    5425.74
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      11.55      57.53
+  modelH-3-0.8-0.2    value       15397.00    1382.80    1382.23
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      20.57      19.35
+  modelH-4-0.8-0.2    value       15447.30    4427.73    4427.66
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.13       8.25     109.47
+  modelH-5-0.8-0.2    value        9391.02    6385.98    6385.44
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.13       6.26      32.41
+  modelH-6-0.8-0.2    value       13420.27    5407.69    3403.83
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      36.05      24.21
+  modelH-7-0.8-0.2    value       11438.71   10411.17   11498.09
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.13      18.45      72.97
+  modelH-8-0.8-0.2    value       14385.72    6376.91    6375.75
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      35.24      80.66
+  modelH-9-0.8-0.2    value        7393.92    3386.31    3385.93
+                      bound           -Inf       -Inf       -Inf
+                      runtime         0.14      28.90      29.45
+  <strong>mean energy</strong>                 12518.59    5805.17    5513.02
+  <strong>mean bound</strong>                      -Inf       -Inf       -Inf
+  <strong>mean runtime</strong>                    0.14      21.23      51.04
+  <strong>best value</strong>                      0.00       0.00       0.00
+  <strong>best bound</strong>                      0.00       0.00       0.00
+  <strong>verified opt</strong>                    0.00       0.00       0.00</p>
+
+<p>: inclusion</p>
+
+<hr />
+
+<p><strong>stereo</strong>             $\alpha$-Fusion       TRBP       ADDD   MPLP   MPLP-C     BUNDLE                                                                                           SRMP   ADMM</p>
+
+<hr />
+
+<p><strong>stereo</strong>             $\alpha$-Fusion       TRBP       ADDD   MPLP   MPLP-C     BUNDLE                                                                                           SRMP   ADMM</p>
+
+<p>art_small   value            13262.49   13336.35   13543.70    NaN      NaN   15105.28                                                                          **13091.20&amp; 13297.79\
+                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 12925.76&amp; NaN&amp; NaN&amp; 12178.62&amp; **13069.30&amp; -Inf\
+                                                                                                                &amp; runtime&amp; 50.99&amp; 3744.91&amp; 3096.10&amp; NaN&amp; NaN&amp; 3845.89&amp; 3603.89&amp; 3710.92\
+                                                                                            cones_small&amp; value&amp; 18582.85&amp; 18640.25&amp; 18763.13&amp; NaN&amp; NaN&amp; 20055.65&amp; **18433.01&amp; 18590.87\
+                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 18334.00&amp; NaN&amp; NaN&amp; 17724.56&amp; **18414.29&amp; -Inf\
+                                                                                                                &amp; runtime&amp; 48.89&amp; 3660.77&amp; 7506.15&amp; NaN&amp; NaN&amp; 3814.74&amp; 3603.11&amp; 3659.15\
+                                                                                            teddy_small&amp; value&amp; 14653.53&amp; 14680.21&amp; 14804.46&amp; NaN&amp; NaN&amp; 15733.15&amp; **14528.74&amp; 14715.83\
+                                                                                                                    &amp; bound&amp; -Inf&amp; -Inf&amp; 14374.12&amp; NaN&amp; NaN&amp; 13981.71&amp; **14518.03&amp; -Inf\
+                                                                                                                &amp; runtime&amp; 50.99&amp; 3670.35&amp; 3535.79&amp; NaN&amp; NaN&amp; 3820.05&amp; 3603.49&amp; 3620.84\
+                                                                                                  venus_small&amp; value&amp; 9644.78&amp; 9692.80&amp; 9796.44&amp; NaN&amp; NaN&amp; 9990.68&amp; **9606.34&amp; 9669.62\
+                                                                                                                       &amp; bound&amp; -Inf&amp; -Inf&amp; 9377.05&amp; NaN&amp; NaN&amp; 9402.97&amp; **9601.86&amp; -Inf\
+                                                                                                                &amp; runtime&amp; 49.24&amp; 3627.58&amp; 3761.29&amp; NaN&amp; NaN&amp; 3774.66&amp; 3603.14&amp; 3657.60\
+                                                                                               <strong>mean energy</strong> &amp; &amp; 14035.91&amp; 14087.40&amp; 14226.93&amp; NaN&amp; NaN&amp; 15221.19&amp; 13914.82&amp; 14068.53\
+                                                                                                            <strong>mean bound</strong> &amp; &amp; -Inf&amp; -Inf&amp; 13752.73&amp; NaN&amp; NaN&amp; 13321.96&amp; 13900.87&amp; -Inf\
+                                                                                                      <strong>mean runtime</strong> &amp; &amp; 50.03&amp; 3675.90&amp; 4474.83&amp; NaN&amp; NaN&amp; 3813.84&amp; 3603.41&amp; 3662.13\
+                                                                                                                    <strong>best value</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00\
+                                                                                                                    <strong>best bound</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 100.00&amp; 0.00\
+                                                                                                                    <strong>verified opt</strong> &amp; &amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00&amp; 0.00\
+                                                                                                                                                                        ****************</p>
+
+<hr />
+
+<p>: stereo</p>
+
+<p><strong>stereo</strong>                          BCD         FW        PGD</p>
+
+<hr />
+
+<p><strong>stereo</strong>                          BCD         FW        PGD
+  art_small         value       13896.67   13696.50   13929.06
+                     bound           -Inf       -Inf       -Inf
+                     runtime        60.63    1407.07    3648.00
+  cones_small       value       18926.70   18776.26   19060.17
+                     bound           -Inf       -Inf       -Inf
+                     runtime        57.40    2111.63    3669.24
+  teddy_small       value       14998.31   14891.12   15193.23
+                     bound           -Inf       -Inf       -Inf
+                     runtime        60.08    1626.66    3671.59
+  venus_small       value        9767.21    9726.27    9992.13
+                     bound           -Inf       -Inf       -Inf
+                     runtime        60.27    1851.40    3670.82
+  <strong>mean energy</strong>                14397.22   14272.54   14543.65
+  <strong>mean bound</strong>                     -Inf       -Inf       -Inf
+  <strong>mean runtime</strong>                  59.59    1749.19    3664.92
+  <strong>best value</strong>                     0.00       0.00       0.00
+  <strong>best bound</strong>                     0.00       0.00       0.00
+  <strong>verified opt</strong>                   0.00       0.00       0.00</p>
+
+<p>: stereo</p>
+<div class="footnotes">
+
+<hr />
+
+<ol>
+<li id="fn:1"><p>In the standard LP relaxation, the product
+$\prod_{j\in C}x_j(s_j)$ in  is replaced with new variables
+$x_C(s<em>C)$, seen as the indicator function of the joint label
+assigned to the clique $C$, and the following <em>local consistency</em>
+constraints are added:
+$\forall j\in C:\ \sum</em>{l_{C\setminus j}}x_C(s_C) = x_j(s_j)\quad \forall s_j\in{\mathcal{S}}_j.$</p>
+ <a class="footnote-return" href="#fnref:1"><sup>^</sup></a></li>
+<li id="fn:2">Note that pairwise MRFs are also called <em>first-order</em> ones.
+ <a class="footnote-return" href="#fnref:2"><sup>^</sup></a></li>
+
+<li id="fn:3"><p>A vector ${\mathbf{x}}$ is a limit point of a sequence
+${{\mathbf{x}}^{(k)}}$ if there exists a subsequence of
+${{\mathbf{x}}^{(k)}}$ that converges to ${\mathbf{x}}$.</p>
+ <a class="footnote-return" href="#fnref:3"><sup>^</sup></a></li>
+
+<li id="fn:4"><p>Subgradient dual decomposition [@komodakis2011mrf] is excluded as
+we found that its performance was generally worse than bundle.</p>
+ <a class="footnote-return" href="#fnref:4"><sup>^</sup></a></li>
+
+<li id="fn:5"><p>BCD cannot improve further the solution according to
+Proposition [propos:methods-compare].</p>
+ <a class="footnote-return" href="#fnref:5"><sup>^</sup></a></li>
+<li id="fn:6"><a href="http://hciweb2.iwr.uni-heidelberg.de/opengm/index.php?l0=benchmark" target="_blank">http://hciweb2.iwr.uni-heidelberg.de/opengm/index.php?l0=benchmark</a>
+ <a class="footnote-return" href="#fnref:6"><sup>^</sup></a></li>
+
+<li id="fn:7"><p>For a fair comparison, we used the <em>single-thread</em> version of
+ADMM.</p>
+ <a class="footnote-return" href="#fnref:7"><sup>^</sup></a></li>
+</ol>
+</div>
+
+    </div>
+
+    
+
+
+    
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="powered-by">
+
+      &copy; 2018 D. Khuê Lê-Huu &middot; 
+
+      Powered by the
+      <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+      <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+      <span class="pull-right" aria-hidden="true">
+        <a href="#" id="back_to_top">
+          <span class="button_icon">
+            <i class="fa fa-chevron-up fa-2x"></i>
+          </span>
+        </a>
+      </span>
+
+    </p>
+  </div>
+</footer>
+
+
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close btn-large" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Cite</h4>
+      </div>
+      <div>
+        <pre><code class="modal-body tex"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary btn-outline js-copy-cite" href="#" target="_blank">
+          <i class="fa fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-primary btn-outline js-download-cite" href="#" target="_blank">
+          <i class="fa fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+    
+
+    
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha512-3P8rXCuGJdNZOnUx/03c1jOTnMn3rP63nBip5gOP2qmUh5YAdVAvFZ1E+QLZZbC1rtMrQb+mah3AfYW11RUrWA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.3/imagesloaded.pkgd.min.js" integrity="sha512-umsR78NN0D23AzgoZ11K7raBD+R6hqKojyBZs1w8WvYlsI+QuKRGBx3LFCwhatzBunCjDuJpDHwxD13sLMbpRA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha512-iztkobsvnjKfAtTNdHkGVjAYTrrtlC7mGp/54c40wowO7LhURYl3gVzzcEqGl/qKXQltJ2HwMrdLcNUdo+N/RQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.4/isotope.pkgd.min.js" integrity="sha512-VDBOIlDbuC4VWxGJNmuFRQ0Li0SKkDpmGyuhAG5LTDLd/dJ/S0WMVxriR2Y+CyPL5gzjpN4f/6iqWVBJlht0tQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+    
+    
+    <script src="/js/hugo-academic.js"></script>
+    
+
+    
+    
+      
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+      
+
+      
+
+      
+
+      <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+
+  </body>
+</html>
+
