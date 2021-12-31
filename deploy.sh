@@ -22,7 +22,7 @@ fi
 
 # echo -e "\033[0;32mCompile the website...\033[0m"
 # Build the project.
-jekyll build
+bundle exec jekyll build
 
 # echo -e "\033[0;32mPush 'public' to '<username>.github.io'...\033[0m"
 # Go To Public folder
