@@ -230,9 +230,9 @@ ul.ul-edu li { position: relative; padding: 0px 15px 4px 3px; }
 
 ul.ul-edu li .description p { margin: 0; }
 
-ul.ul-edu li .description p.course { font-size: 0.9rem; }
+ul.ul-edu li .description p.institution { font-size: 0.95rem; color: rgba(0, 0, 0, 0.6); }
 
-ul.ul-edu li .description p.institution { font-size: 0.75rem; color: rgba(0, 0, 0, 0.6); }
+.clearfix { text-align: justify; }
 
 /******************************************************************************* Style overrides for distill blog posts. */
 d-byline { border-top-color: #e8e8e8 !important; }
