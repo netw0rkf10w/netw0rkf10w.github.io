@@ -15,10 +15,10 @@ if [ $# -eq 1 ]
   then msg="$1"
 fi
 
-# echo -e "\033[0;32mPushing source code...\033[0m"
-# git add .
-# git commit -m "$msg"
-# git push origin ${private_repo} -f
+echo -e "\033[0;32mPushing source code...\033[0m"
+git add .
+git commit -m "$msg"
+git push origin ${private_branch} -f
 
 
 # Build the project.
