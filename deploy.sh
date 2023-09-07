@@ -1,6 +1,13 @@
 #!/bin/bash
 
-echo -e "\033[0;32mPushing generated website...\033[0m"
+# exit when any command fails
+set -e
+
+public_repo=netw0rkf10w.github.io
+public_branch=master
+private_repo=blog-jekyll
+private_branch=master
+
 
 # Commit changes.
 msg="rebuilding site `date`"
@@ -8,36 +15,28 @@ if [ $# -eq 1 ]
   then msg="$1"
 fi
 
-# echo -e "\033[0;32mRemove 'public' and push to 'blog'...\033[0m"
-
-# Remove the generated 'public' folder before pushing to 'blog'
-# rm -rf public
-
-# # Push the code to the 'blog' repo
+# echo -e "\033[0;32mPushing source code...\033[0m"
 # git add .
 # git commit -m "$msg"
+# git push origin ${private_repo} -f
 
-# # Push source and build repos.
-# git push origin master
 
-# echo -e "\033[0;32mCompile the website...\033[0m"
 # Build the project.
+rm -r _site/*
 bundle exec jekyll build
 
 # echo -e "\033[0;32mPush 'public' to '<username>.github.io'...\033[0m"
 # Go To Public folder
-cd _site
+# cd _site
 # Add changes to git.
-git add .
 
-git commit -m "$msg"
+echo -e "\033[0;32mCopy generated website to ../${public_repo} ...\033[0m"
 
-# Push source and build repos.
-git push origin master -f
+cd ../${public_repo}/
+rm -r ./*
+cp -r ../${private_repo}/_site/* ./
 
-echo -e "\033[0;32mPushing source code...\033[0m"
-# Come Back up to the Project Root
-cd ..
+echo -e "\033[0;32mPushing generated website...\033[0m"
 git add .
 git commit -m "$msg"
-git push origin master -f
+git push origin ${public_branch} -f
