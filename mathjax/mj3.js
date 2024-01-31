@@ -2,9 +2,6 @@ window.MathJax = {
     loader: {load: ['input/asciimath']},
     startup: {
       pageReady: function () {
-        //
-        // Synchronize menu renderer item with on-screen popup menu
-        //
         var select = document.getElementById('Renderer');
         if (select) {
           var renderer = MathJax.startup.document.menu.settings.renderer;
@@ -19,9 +16,8 @@ window.MathJax = {
           window.setMode = function (renderer) {
             if (item.getValue() !== renderer) item.setValue(renderer);
           }
-          //
+
           //  Set up processing of input content
-          //
           var input = document.getElementById('MathInput');
           var output = document.getElementById('MathPreview');
           var button = document.getElementById('renderHTML');
@@ -48,18 +44,11 @@ window.MathJax = {
     tex: {
       inlineMath: [['$', '$'], ['\\(', '\\)']],
       processEscapes: true
-    },
-    svg: {
-        fontCache: 'global',
-        dynamicPrefix: 'https://cdn.jsdelivr.net/npm/mathjax-modern-font@4.0.0-beta.4/cjs/svg/dynamic'
-      },
+    }
   };
   
-  //
   //  Load MathJax
-  //
   var script = document.createElement('script');
-//   script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'; // v3
-  script.src =  'https://cdn.jsdelivr.net/npm/mathjax@4.0.0-beta.4/tex-mml-chtml.js'; // v4
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js'; // v3
   script.setAttribute('id', 'MathJax-script');
   document.head.appendChild(script);
