@@ -1,0 +1,62 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+        div {
+          max-width: 900px;
+          margin: auto;
+          border: 1px solid #000000;
+          font-size: 18px;
+        }
+        </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <!-- <script type="text/javascript" async="" src="mathjax.js"></script> -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0-beta.4/tex-svg.js"></script>
+    
+<title>MathJax</title>
+</head>
+<body>
+  <div class="card card--popout" id="samples">
+    <h3>MathJax Examples</h3>
+    <!-- <p>
+      Adapted from https://www.mathjax.org/#samples.
+    </p>
+    <p>
+      <label>
+      Select the rendering mode: &nbsp;
+      <select id="Renderer" onchange="setMode(this.value)" style="margin: 0px 0px 0px">
+        <option value="CHTML">CommonHTML</option>
+        <option value="SVG">SVG</option>
+      </select>
+      </label>
+    </p> -->
+
+
+    <h4>The Quadratic Formula</h4>
+    \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}\]
+
+    <h4>Cauchy's Integral Formula</h4>
+    \[f(a) = \frac{1}{2\pi i} \oint\frac{f(z)}{z-a}dz\]
+
+    <h4>Angle Sum Formula for Cosines</h4>
+    \[ \cos(\theta+\phi)=\cos(\theta)\cos(\phi)−\sin(\theta)\sin(\phi) \]
+
+    <h4>Gauss' Divergence Theorem</h4>
+    \[ \int_D ({\nabla\cdot} F)dV=\int_{\partial D} F\cdot ndS \]
+
+    <h4>Curl of a Vector Field</h4>
+    \[ \vec{\nabla} \times \vec{F} =
+        \left( \frac{\partial F_z}{\partial y} - \frac{\partial F_y}{\partial z} \right) \mathbf{i}
+      + \left( \frac{\partial F_x}{\partial z} - \frac{\partial F_z}{\partial x} \right) \mathbf{j}
+      + \left( \frac{\partial F_y}{\partial x} - \frac{\partial F_x}{\partial y} \right) \mathbf{k} \]
+
+    <h4>Standard Deviation</h4>
+    \[\sigma = \sqrt{ \frac{1}{N} \sum_{i=1}^N (x_i -\mu)^2} \]
+
+    <h4>Definition of Christoffel Symbols</h4>
+    \[(\nabla_X Y)^k = X^i (\nabla_i Y)^k =
+       X^i \left( \frac{\partial Y^k}{\partial x^i} + \Gamma_{im}^k Y^m \right)\]
+
+    <a href="#to-samples" aria-label="Close pop-out" class="card--popout__close"></a>
+  </div>
+</body>
+</html>

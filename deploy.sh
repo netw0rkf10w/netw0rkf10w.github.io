@@ -6,7 +6,7 @@ set -e
 public_repo=netw0rkf10w.github.io
 public_branch=master
 private_repo=blog-jekyll
-private_branch=master
+private_branch=main
 
 
 # Commit changes.
